@@ -16,7 +16,7 @@ enum AppDI {
             callbackScheme: "com.shrivatsav.monomail"
         )
         return AppModule(
-            secureStore: IosSecureStore(defaults: .standard, namespace: "secure."),
+            secureStore: IosSecureStore(service: "com.shrivatsav.monomail.secure"),
             keyValueStore: IosKeyValueStore(defaults: .standard),
             driverFactory: IosSqlDriverFactory(),
             browser: OAuthBrowser(),

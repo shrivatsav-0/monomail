@@ -11,18 +11,30 @@ struct InboxView: View {
         settings: AppDI.module.settingsRepository
     )
     @StateObject private var state = FlowObserver<InboxState>(initial: InboxState.Loading())
+    @State private var showCompose = false
 
     var body: some View {
         NavigationStack {
             content
                 .navigationTitle("Inbox")
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        NavigationLink(destination: SettingsView()) {
+                            Image(systemName: "gearshape")
+                        }
+                    }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button { viewModel.refresh(showLoader: true) } label: {
                             Image(systemName: "arrow.clockwise")
                         }
                     }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button { showCompose = true } label: {
+                            Image(systemName: "square.and.pencil")
+                        }
+                    }
                 }
+                .sheet(isPresented: $showCompose) { ComposeView() }
         }
         .onAppear { state.start(viewModel.state) }
     }

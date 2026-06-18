@@ -21,25 +21,3 @@ class IosKeyValueStore(
         }
     }
 }
-
-/**
- * INTERIM iOS secure store backed by NSUserDefaults.
- *
- * TODO(security): replace with a Keychain-backed implementation using
- * kSecClassGenericPassword + kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
- * (no iCloud sync). Refresh tokens must NOT live in NSUserDefaults long-term.
- * Tracked as the next task in the security-hardening pass.
- */
-class IosSecureStore(
-    private val defaults: NSUserDefaults = NSUserDefaults.standardUserDefaults,
-    private val namespace: String = "secure."
-) : SecureStore {
-    override fun getString(key: String): String? = defaults.stringForKey(namespace + key)
-    override fun putString(key: String, value: String) = defaults.setObject(value, forKey = namespace + key)
-    override fun remove(key: String) = defaults.removeObjectForKey(namespace + key)
-    override fun clear() {
-        defaults.dictionaryRepresentation().keys.forEach { k ->
-            (k as? String)?.let { if (it.startsWith(namespace)) defaults.removeObjectForKey(it) }
-        }
-    }
-}

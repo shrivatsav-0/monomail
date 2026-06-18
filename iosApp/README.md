@@ -74,9 +74,10 @@ casts in the views must be rewritten against the raw Kotlin/Native ObjC interfac
   keep the app launching. Not a permanent install like an Android `.apk`.
 - **Swift ↔ Kotlin names:** the sealed-state casts (`InboxStateSuccess`, etc.) and
   default-arg initializers are best-effort; adjust to the generated header.
-- **Security (interim):** `IosSecureStore` currently uses `NSUserDefaults`, not the
-  Keychain — see `TODO(security)` in the shared module. Replace before real use.
+- **Security:** `IosSecureStore` is Keychain-backed
+  (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, no iCloud sync). Android
+  side still interim (plain SharedPreferences / no SQLCipher) — see `TODO(security)`.
 - **Data Protection:** `MonoMail.entitlements` requests `NSFileProtectionComplete`.
   If free provisioning rejects it, drop it (passcode devices default to Complete).
-- **Screens:** only sign-in → inbox → detail are scaffolded. Compose + settings
-  view models exist in shared; their SwiftUI screens are still to do.
+- **Screens:** sign-in → inbox → detail → compose → settings are scaffolded.
+  Enum picker case names in `SettingsView` assume SKIE; tune if needed.
