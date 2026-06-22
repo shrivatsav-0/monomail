@@ -85,7 +85,7 @@ class GmailProvider(
         }
         return ProviderThreadListResult(providerThreads, response.nextPageToken)
     }
-    override suspend fun getThread(threadId: String): ProviderThread {
+    override suspend fun getThread(threadId: String, folderHints: List<String>): ProviderThread = withContext(Dispatchers.IO) {
         val rawThread = api.getThread(threadId)
         val messages = rawThread.messages.orEmpty().map { msg ->
             val email = msg.toEmail()
@@ -115,7 +115,7 @@ class GmailProvider(
                 attachments = email.attachments
             )
         }
-        return ProviderThread(rawThread.id, messages)
+        ProviderThread(rawThread.id, messages)
     }
     override suspend fun getAttachmentBytes(messageId: String, attachmentId: String): ByteArray? {
         return withContext(Dispatchers.IO) {
@@ -142,6 +142,9 @@ class GmailProvider(
     }
     override suspend fun restoreThread(threadId: String) {
         api.untrashThread(threadId)
+    }
+    override suspend fun permanentlyDeleteThread(threadId: String) {
+        api.permanentlyDeleteThread(threadId)
     }
     override suspend fun toggleStar(threadId: String, starred: Boolean) {
         if (starred) {

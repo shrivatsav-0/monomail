@@ -20,6 +20,8 @@ interface ThreadDao {
     fun getStarredThreads(accountId: String): Flow<List<ThreadEntity>>
     @Query("SELECT * FROM threads WHERE accountId = :accountId AND inTrash = 1 ORDER BY date DESC")
     fun getTrashThreads(accountId: String): Flow<List<ThreadEntity>>
+    @Query("SELECT threadId FROM threads WHERE accountId = :accountId AND inTrash = 1")
+    suspend fun getTrashThreadIds(accountId: String): List<String>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertThreads(threads: List<ThreadEntity>)
     @Query("UPDATE threads SET isStarred = :isStarred WHERE threadId = :threadId AND accountId = :accountId")
@@ -55,4 +57,12 @@ interface ThreadDao {
     suspend fun emptyTrash(accountId: String)
     @Query("DELETE FROM threads WHERE accountId = :accountId AND inSpam = 1")
     suspend fun emptySpam(accountId: String)
+
+    @Query("SELECT threadId, snippet FROM threads WHERE accountId = :accountId AND snippet != ''")
+    suspend fun getSnippetsForAccount(accountId: String): List<ThreadSnippetProjection>
 }
+
+data class ThreadSnippetProjection(
+    val threadId: String,
+    val snippet: String
+)

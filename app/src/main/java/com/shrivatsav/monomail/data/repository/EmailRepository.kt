@@ -112,7 +112,7 @@ class EmailRepository(
             val provider = if (accountId != null) getProviderForAccount(accountId) else getActiveProvider()
             if (provider == null) return Result.failure(Exception("No active provider"))
             val targetAccountId = accountId ?: getActiveAccountId()
-            if (tab == InboxTab.SNOOZED || tab == InboxTab.SPAM) return Result.success(null)
+            if (tab == InboxTab.SNOOZED) return Result.success(null)
             val folder = when (tab) {
                 InboxTab.INBOX -> EmailFolder.INBOX
                 InboxTab.SENT -> EmailFolder.SENT
@@ -129,6 +129,10 @@ class EmailRepository(
                 pageToken = pageToken,
                 query = query
             )
+            val existingSnippets = if (provider.providerName == "imap") {
+                threadDao.getSnippetsForAccount(targetAccountId)
+                    .associateBy { it.threadId }
+            } else emptyMap()
             if (listResponse.threads.isNotEmpty()) {
                 val entities = listResponse.threads.map { providerThread ->
                     val messages = providerThread.messages
@@ -137,12 +141,15 @@ class EmailRepository(
                     val participants = messages.map { it.from }.distinct()
                     val isRead = messages.all { it.isRead }
                     val isStarred = messages.any { it.isStarred }
+                    val finalSnippet = (latest?.snippet ?: "").ifBlank {
+                        existingSnippets[providerThread.threadId]?.snippet ?: ""
+                    }
                     val domainThread = EmailThread(
                         threadId = providerThread.threadId,
                         subject = cleanSubject(latest?.subject ?: "(no subject)"),
                         from = latest?.from ?: "",
                         fromEmail = latest?.fromEmail ?: "",
-                        snippet = latest?.snippet ?: "",
+                        snippet = finalSnippet,
                         date = latest?.date ?: 0L,
                         messageCount = messages.size,
                         isRead = isRead,
@@ -286,6 +293,13 @@ class EmailRepository(
     }
     suspend fun emptyTrash() {
         val activeAccountId = getActiveAccountId()
+        val provider = getActiveProvider()
+        if (provider != null) {
+            val trashIds = threadDao.getTrashThreadIds(activeAccountId)
+            trashIds.forEach { threadId ->
+                try { provider.permanentlyDeleteThread(threadId) } catch (e: Exception) { Log.e("EmailRepo", "permanent delete failed for $threadId", e) }
+            }
+        }
         threadDao.emptyTrash(activeAccountId)
         emailDao.emptyTrash(activeAccountId)
     }

@@ -8,12 +8,13 @@ interface EmailProvider {
         pageToken: String? = null,
         query: String? = null
     ): ProviderThreadListResult
-    suspend fun getThread(threadId: String): ProviderThread
+    suspend fun getThread(threadId: String, folderHints: List<String> = emptyList()): ProviderThread
     suspend fun getAttachmentBytes(messageId: String, attachmentId: String): ByteArray?
     suspend fun archiveThread(threadId: String)
     suspend fun unarchiveThread(threadId: String)
     suspend fun trashThread(threadId: String)
     suspend fun restoreThread(threadId: String)
+    suspend fun permanentlyDeleteThread(threadId: String)
     suspend fun toggleStar(threadId: String, starred: Boolean)
     suspend fun markRead(threadId: String, read: Boolean)
     suspend fun batchMarkRead(messageIds: List<String>)

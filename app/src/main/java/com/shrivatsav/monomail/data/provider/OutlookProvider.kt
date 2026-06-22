@@ -85,7 +85,7 @@ class OutlookProvider(
         val nextSkip = if (response.nextLink != null) (skip + maxResults).toString() else null
         return ProviderThreadListResult(providerThreads, nextSkip)
     }
-    override suspend fun getThread(threadId: String): ProviderThread {
+    override suspend fun getThread(threadId: String, folderHints: List<String>): ProviderThread = withContext(Dispatchers.IO) {
         val response = api.listMessages(
             maxResults = 100,
             filter = "conversationId eq '$threadId'"
@@ -123,7 +123,7 @@ class OutlookProvider(
                 attachments = attachments
             )
         }
-        return ProviderThread(threadId, providerMessages.sortedBy { it.date })
+        ProviderThread(threadId, providerMessages.sortedBy { it.date })
     }
     override suspend fun getAttachmentBytes(messageId: String, attachmentId: String): ByteArray? {
         return withContext(Dispatchers.IO) {
@@ -153,6 +153,10 @@ class OutlookProvider(
     override suspend fun restoreThread(threadId: String) {
         val msgs = api.listMessages(filter = "conversationId eq '$threadId'").value
         msgs.forEach { api.moveMessage(it.id, OutlookMoveMessageRequest("inbox")) }
+    }
+    override suspend fun permanentlyDeleteThread(threadId: String) {
+        val msgs = api.listMessages(filter = "conversationId eq '$threadId'").value
+        msgs.forEach { api.deleteMessage(it.id) }
     }
     override suspend fun toggleStar(threadId: String, starred: Boolean) {
         val msgs = api.listMessages(filter = "conversationId eq '$threadId'").value

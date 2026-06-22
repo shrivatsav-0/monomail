@@ -18,7 +18,7 @@ enum class UndoSendWindow(val seconds: Int) { SEC_5(5), SEC_10(10), SEC_20(20), 
 enum class DockTabId { UNIFIED, INBOX, SENT, ARCHIVED, SNOOZED, STARRED, TRASH, SPAM }
 data class DockConfig(
     val primaryTabs: List<DockTabId> = listOf(
-        DockTabId.UNIFIED, DockTabId.SENT, DockTabId.ARCHIVED
+        DockTabId.INBOX, DockTabId.SENT, DockTabId.ARCHIVED
     )
 ) {
     companion object {
@@ -46,7 +46,7 @@ data class AppSettings(
     val unifiedInboxEnabled: Boolean = false,
     val hasSeenWelcomePrompt: Boolean = false,
     val smartGroupingEnabled: Boolean = true,
-    val smartGroupingRecentOnly: Boolean = false,
+    val smartGroupingRecentOnly: Boolean = true,
     val organizeByThread: Boolean = true,
     val navScale: Float = 1f,
     val undoSendEnabled: Boolean = true,
@@ -94,7 +94,7 @@ class SettingsDataStore(private val context: Context) {
             unifiedInboxEnabled = prefs[Keys.UNIFIED_INBOX_ENABLED] ?: false,
             hasSeenWelcomePrompt = prefs[Keys.HAS_SEEN_WELCOME_PROMPT] ?: false,
             smartGroupingEnabled = prefs[Keys.SMART_GROUPING_ENABLED] ?: true,
-            smartGroupingRecentOnly = prefs[Keys.SMART_GROUPING_RECENT_ONLY] ?: false,
+            smartGroupingRecentOnly = prefs[Keys.SMART_GROUPING_RECENT_ONLY] ?: true,
             organizeByThread = prefs[Keys.ORGANIZE_BY_THREAD] ?: true,
             navScale = prefs[Keys.NAV_SCALE] ?: 1f,
             undoSendEnabled = prefs[Keys.UNDO_SEND_ENABLED] ?: true,
