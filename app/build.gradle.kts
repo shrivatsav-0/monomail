@@ -63,9 +63,6 @@ android {
         buildConfig = true
     }
 
-    composeCompiler {
-        enableStrongSkippingMode = true
-    }
 
     packaging {
         jniLibs {
@@ -162,4 +159,8 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+}
+
+tasks.register("printVersionName") {
+    doLast { println(android.defaultConfig.versionName) }
 }
