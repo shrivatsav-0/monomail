@@ -220,6 +220,7 @@ class EmailRepository(
             emailDao.insertEmails(emails.map { it.toEntity(activeAccountId) })
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e("EmailRepo", "refreshThread failed for $threadId", e)
             Result.failure(e)
         }
     }

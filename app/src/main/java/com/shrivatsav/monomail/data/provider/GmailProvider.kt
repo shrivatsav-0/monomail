@@ -1,5 +1,6 @@
 package com.shrivatsav.monomail.data.provider
 import android.content.Context
+import android.util.Log
 import com.shrivatsav.monomail.data.mapper.EmailMapper.toEmail
 import com.shrivatsav.monomail.data.model.EmailAttachment
 import com.shrivatsav.monomail.data.remote.BatchModifyMessagesRequest
@@ -46,7 +47,7 @@ class GmailProvider(
                     try {
                         api.getThread(ref.id)
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        Log.e("GmailProvider", "getThread failed for thread ${ref.id}", e)
                         null
                     }
                 }
@@ -126,7 +127,7 @@ class GmailProvider(
                     android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("GmailProvider", "getAttachmentBytes failed for message $messageId", e)
                 null
             }
         }

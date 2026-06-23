@@ -105,6 +105,7 @@ class AuthManager(
         } catch (e: UserRecoverableAuthException) {
             notifyReauthRequired(profile.email, profile.provider)
         } catch (e: Exception) {
+            Log.w("AuthManager", "refreshCurrentToken unexpected error", e)
         }
     }
     suspend fun signIn(activityContext: Context): SignInResult {
@@ -229,6 +230,7 @@ class AuthManager(
                     connection.setRequestProperty("Authorization", "Bearer $accessToken")
                     connection.responseCode
                 } catch (e: Exception) {
+                    Log.w("AuthManager", "Gmail profile check failed, assuming token is OK", e)
                     200
                 }
             }

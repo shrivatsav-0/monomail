@@ -1,5 +1,6 @@
 package com.shrivatsav.monomail.data.provider
 import android.content.Context
+import android.util.Log
 import com.shrivatsav.monomail.data.model.EmailAttachment
 import com.shrivatsav.monomail.data.model.EmailAttachmentInfo
 import com.shrivatsav.monomail.data.remote.OutlookApi
@@ -103,7 +104,10 @@ class OutlookProvider(
                             size = 0 
                         )
                     }
-                } catch (e: Exception) { emptyList() }
+                } catch (e: Exception) {
+                    Log.w("OutlookProvider", "getAttachments failed for message ${msg.id}", e)
+                    emptyList()
+                }
             } else { emptyList() }
             ProviderMessage(
                 id = msg.id,
@@ -133,7 +137,7 @@ class OutlookProvider(
                     android.util.Base64.decode(it, android.util.Base64.DEFAULT)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("OutlookProvider", "getAttachmentBytes failed for message $messageId", e)
                 null
             }
         }
@@ -179,7 +183,9 @@ class OutlookProvider(
     override suspend fun batchMarkRead(messageIds: List<String>) {
         withContext(Dispatchers.IO) {
             messageIds.forEach { id ->
-                try { api.updateMessage(id, OutlookUpdateMessageRequest(isRead = true)) } catch (e: Exception) {}
+                try { api.updateMessage(id, OutlookUpdateMessageRequest(isRead = true)) } catch (e: Exception) {
+                    Log.w("OutlookProvider", "batchMarkRead failed for message $id", e)
+                }
             }
         }
     }

@@ -46,12 +46,10 @@ class AuthTokenManager(
      * mutex so that multiple concurrent 401s don't race.
      */
     fun refreshTokenBlocking(accountId: String): String? {
-        // Fast-path: avoid runBlocking if already refreshed by another thread.
-        synchronized(tokenCache) { tokenCache[accountId] }?.let { return it }
-
         return kotlinx.coroutines.runBlocking {
             refreshMutex.withLock {
-                // Re-check after acquiring the lock.
+                // After acquiring the lock, re-check cache in case another
+                // thread already refreshed while we were waiting.
                 getCachedToken(accountId)?.let { return@runBlocking it }
                 try {
                     refreshInternal(accountId)
