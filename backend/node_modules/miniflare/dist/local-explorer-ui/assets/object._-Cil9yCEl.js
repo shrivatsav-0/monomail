@@ -1,0 +1,1 @@
+import{st as e}from"./index-BwGGYgiP.js";var t=e;export{t as notFoundComponent};

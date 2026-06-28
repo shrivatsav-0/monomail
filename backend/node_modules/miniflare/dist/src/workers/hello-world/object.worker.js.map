@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/workers/hello-world/object.worker.ts"],
+  "sourcesContent": ["import { DurableObject } from \"cloudflare:workers\";\n\nexport class HelloWorldObject extends DurableObject {\n\tasync get() {\n\t\treturn await this.ctx.storage.get<string>(\"value\");\n\t}\n\n\tasync set(value: string) {\n\t\tawait this.ctx.storage.put<string>(\"value\", value);\n\t}\n}\n"],
+  "mappings": ";AAAA,SAAS,qBAAqB;AAEvB,IAAM,mBAAN,cAA+B,cAAc;AAAA,EACnD,MAAM,MAAM;AACX,WAAO,MAAM,KAAK,IAAI,QAAQ,IAAY,OAAO;AAAA,EAClD;AAAA,EAEA,MAAM,IAAI,OAAe;AACxB,UAAM,KAAK,IAAI,QAAQ,IAAY,SAAS,KAAK;AAAA,EAClD;AACD;",
+  "names": []
+}
