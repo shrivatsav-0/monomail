@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/workers/analytics-engine/analytics-engine.worker.ts"],
+  "sourcesContent": ["interface Env {\n\tdataset: string;\n}\nclass LocalAnalyticsEngineDataset implements AnalyticsEngineDataset {\n\tconstructor(private env: Env) {}\n\twriteDataPoint(_event?: AnalyticsEngineDataPoint): void {\n\t\t// no op in dev\n\t}\n}\n\nexport default function (env: Env) {\n\treturn new LocalAnalyticsEngineDataset(env);\n}\n"],
+  "mappings": ";AAGA,IAAM,8BAAN,MAAoE;AAAA,EACnE,YAAoB,KAAU;AAAV;AAAA,EAAW;AAAA,EAAX;AAAA,EACpB,eAAe,QAAyC;AAAA,EAExD;AACD;AAEe,SAAR,gCAAkB,KAAU;AAClC,SAAO,IAAI,4BAA4B,GAAG;AAC3C;",
+  "names": []
+}
