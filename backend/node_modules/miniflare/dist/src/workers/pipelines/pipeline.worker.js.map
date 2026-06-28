@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../../src/workers/pipelines/pipeline.worker.ts"],
-  "sourcesContent": ["import { WorkerEntrypoint } from \"cloudflare:workers\";\n\nexport default class Pipeline extends WorkerEntrypoint {\n\tasync send(_data: object[]): Promise<void> {}\n}\n"],
-  "mappings": ";AAAA,SAAS,wBAAwB;AAEjC,IAAqB,WAArB,cAAsC,iBAAiB;AAAA,EACtD,MAAM,KAAK,OAAgC;AAAA,EAAC;AAC7C;",
-  "names": []
-}

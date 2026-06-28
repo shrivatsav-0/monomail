@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../../src/workers/dispatch-namespace/dispatch-namespace.worker.ts"],
-  "sourcesContent": ["/**\n * Wrapped binding extension for dispatch namespaces.\n *\n * Delegates to {@link DispatchNamespaceProxy} via a service binding.\n */\n\ninterface Env {\n\tproxyClient: DispatchNamespace;\n}\n\nexport default function (env: Env): DispatchNamespace {\n\treturn {\n\t\tget(\n\t\t\tname: string,\n\t\t\targs?: { [key: string]: unknown },\n\t\t\toptions?: DynamicDispatchOptions\n\t\t): Fetcher {\n\t\t\treturn env.proxyClient.get(name, args, options);\n\t\t},\n\t} satisfies DispatchNamespace;\n}\n"],
-  "mappings": ";AAUe,SAAR,kCAAkB,KAA6B;AACrD,SAAO;AAAA,IACN,IACC,MACA,MACA,SACU;AACV,aAAO,IAAI,YAAY,IAAI,MAAM,MAAM,OAAO;AAAA,IAC/C;AAAA,EACD;AACD;",
-  "names": []
-}

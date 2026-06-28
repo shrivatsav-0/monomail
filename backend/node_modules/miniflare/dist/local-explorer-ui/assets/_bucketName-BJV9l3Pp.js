@@ -1,1 +1,0 @@
-import{Gn as e,Ln as t}from"./index-BwGGYgiP.js";var n=e(),r=()=>(0,n.jsx)(t,{});export{r as component};
