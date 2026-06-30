@@ -37,17 +37,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.Forward
-import androidx.compose.material.icons.automirrored.outlined.Reply
-import androidx.compose.material.icons.outlined.AttachFile
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.ImageNotSupported
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.Forward
+import androidx.compose.material.icons.automirrored.rounded.Reply
+import androidx.compose.material.icons.rounded.AttachFile
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.ImageNotSupported
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.LinearProgressIndicator
@@ -110,7 +109,7 @@ fun EmailDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
@@ -119,7 +118,7 @@ fun EmailDetailScreen(
                 actions = {
                     IconButton(onClick = { viewModel.toggleStar() }) {
                         Icon(
-                            imageVector = if (isStarred) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                            imageVector = if (isStarred) Icons.Rounded.Star else Icons.Rounded.Star,
                             contentDescription = if (isStarred) "Unstar" else "Star",
                             tint = if (isStarred) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
@@ -128,7 +127,7 @@ fun EmailDetailScreen(
                     Box {
                         IconButton(onClick = { showMenu = true }) {
                             Icon(
-                                imageVector = Icons.Outlined.MoreVert,
+                                imageVector = Icons.Rounded.MoreVert,
                                 contentDescription = "More",
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
@@ -319,7 +318,7 @@ private fun ThreadConversationContent(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(
-                                imageVector = if (isExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                                imageVector = if (isExpanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
                                 contentDescription = if (isExpanded) "Collapse" else "Expand",
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                                 modifier = Modifier.size(20.dp)
@@ -492,7 +491,7 @@ private fun ThreadConversationContent(
                     shape = MaterialTheme.shapes.extraLarge
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Reply,
+                        imageVector = Icons.AutoMirrored.Rounded.Reply,
                         contentDescription = "Reply",
                         modifier = Modifier.size(18.dp)
                     )
@@ -507,7 +506,7 @@ private fun ThreadConversationContent(
                     shape = MaterialTheme.shapes.extraLarge
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Forward,
+                        imageVector = Icons.AutoMirrored.Rounded.Forward,
                         contentDescription = "Forward",
                         modifier = Modifier.size(18.dp)
                     )
@@ -774,7 +773,7 @@ private fun MessageBody(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.ImageNotSupported,
+                        imageVector = Icons.Rounded.ImageNotSupported,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
@@ -870,7 +869,7 @@ private fun MessageBody(
                         modifier = Modifier.padding(start = 12.dp)
                     ) {
                         Icon(
-                            imageVector = if (showQuotedText) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                            imageVector = if (showQuotedText) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
@@ -1026,7 +1025,7 @@ private fun ImageAttachmentCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.AttachFile,
+                            imageVector = Icons.Rounded.AttachFile,
                             contentDescription = "Attachment",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier.size(28.dp)
@@ -1053,7 +1052,7 @@ private fun ImageAttachmentCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Outlined.Image,
+                imageVector = Icons.Rounded.Image,
                 contentDescription = "Attachment Options",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 modifier = Modifier.size(14.dp)

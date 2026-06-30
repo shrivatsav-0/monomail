@@ -5,8 +5,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -134,25 +134,25 @@ internal fun SwipeableEmailItem(
                     when (action) {
                         com.shrivatsav.monomail.data.settings.SwipeAction.ARCHIVE ->
                             Icon(
-                                if (tabForSwipe == InboxTab.ARCHIVED) Icons.Outlined.Inbox else if (tabForSwipe == InboxTab.SPAM) Icons.Outlined.Restore else Icons.Outlined.Archive,
+                                if (tabForSwipe == InboxTab.ARCHIVED) Icons.Rounded.Inbox else if (tabForSwipe == InboxTab.SPAM) Icons.Rounded.Restore else Icons.Rounded.Archive,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         com.shrivatsav.monomail.data.settings.SwipeAction.STAR ->
                             Icon(
-                                if (optIsStarred) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                                if (optIsStarred) Icons.Rounded.Star else Icons.Rounded.Star,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onTertiaryContainer
                             )
                         com.shrivatsav.monomail.data.settings.SwipeAction.DELETE ->
                             Icon(
-                                Icons.Outlined.Delete,
+                                Icons.Rounded.Delete,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onErrorContainer
                             )
                         com.shrivatsav.monomail.data.settings.SwipeAction.READ_UNREAD ->
                             Icon(
-                                if (optIsRead) Icons.Outlined.MarkEmailRead else Icons.Outlined.MarkEmailUnread,
+                                if (optIsRead) Icons.Rounded.MarkEmailRead else Icons.Rounded.MarkEmailUnread,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer
                             )
