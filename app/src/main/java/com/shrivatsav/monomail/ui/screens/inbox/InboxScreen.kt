@@ -198,7 +198,9 @@ fun InboxScreen(
                         scheduledCount = scheduledCount,
                         isBulkMode = isBulkMode,
                         selectedCount = selectedCount,
+                        totalCount = localFilteredThreads?.size ?: currentThreads.size,
                         onSelectAll = { viewModel.selectAll() },
+                        onDeselectAll = { viewModel.deselectAll() },
                         onDone = { viewModel.exitBulkSelectMode() }
                     )
 
@@ -266,6 +268,17 @@ fun InboxScreen(
                             }
                             val displayItems = remember(inboxStructure, expandedGroupsList) {
                                 flattenDisplayItems(inboxStructure, expandedGroupsList.toSet(), tabPrefix = currentTab.name)
+                            }
+                            val orderedThreadIds by remember(displayItems) {
+                                derivedStateOf {
+                                    displayItems.mapNotNull { item ->
+                                        when (item) {
+                                            is InboxDisplayItem.SingleThread -> item.thread.threadId
+                                            is InboxDisplayItem.NestedThread -> item.thread.threadId
+                                            else -> null
+                                        }
+                                    }
+                                }
                             }
                             // Reset scroll to top on tab entry
                             LaunchedEffect(Unit) {
@@ -371,6 +384,7 @@ fun InboxScreen(
                                                         isBulkMode = isBulkMode,
                                                         isSelected = displayItem.thread.threadId in selectedThreadIds,
                                                         onSelectToggle = { viewModel.toggleThreadSelection(displayItem.thread.threadId) },
+                                                        onRangeSelect = { viewModel.rangeSelectTo(displayItem.thread.threadId, orderedThreadIds) },
                                                         onAvatarLongClick = {
                                                             viewModel.enterBulkSelectMode(displayItem.thread.threadId)
                                                         }
@@ -397,6 +411,7 @@ fun InboxScreen(
                                                         isBulkMode = isBulkMode,
                                                         isSelected = displayItem.thread.threadId in selectedThreadIds,
                                                         onSelectToggle = { viewModel.toggleThreadSelection(displayItem.thread.threadId) },
+                                                        onRangeSelect = { viewModel.rangeSelectTo(displayItem.thread.threadId, orderedThreadIds) },
                                                         onAvatarLongClick = {
                                                             viewModel.enterBulkSelectMode(displayItem.thread.threadId)
                                                         }

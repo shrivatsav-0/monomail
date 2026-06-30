@@ -673,9 +673,20 @@ private fun MessageBody(
                 img[src^="https://"] { display: none !important; }
             """.trimIndent() else ""
 
+            // Determine if we're in dark theme by checking background color brightness
+            val useDarkTheme = try {
+                val bgHex = bgColor.removePrefix("#")
+                val bgInt = bgHex.toLong(16)
+                val r = (bgInt shr 16) and 0xFF
+                val g = (bgInt shr 8) and 0xFF
+                val b = bgInt and 0xFF
+                val luminance = (0.299 * r + 0.587 * g + 0.114 * b)
+                luminance < 128
+            } catch (_: Exception) { false }
+
             """
             <!DOCTYPE html>
-            <html style="color-scheme: light dark;">
+            <html>
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
                 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src http: https: data:; font-src 'none'; frame-src 'none';">
@@ -730,19 +741,17 @@ private fun MessageBody(
                         margin: 0 !important;
                         background: transparent !important;
                     }
-                    /* Dark-mode overrides for emails with explicit light backgrounds */
-                    @media (prefers-color-scheme: dark) {
-                        body [style*="background-color:#"] {
-                            background-color: transparent !important;
-                        }
-                        body [style*="background:#"] {
-                            background: transparent !important;
-                        }
+                    /* App-theme-aware overrides: transparent explicit backgrounds in dark theme */
+                    body.monomail-dark [style*="background-color:#"] {
+                        background-color: transparent !important;
+                    }
+                    body.monomail-dark [style*="background:#"] {
+                        background: transparent !important;
                     }
                     $imgBlockCss
                 </style>
             </head>
-            <body class="${if (showQuotedText) "show-quotes" else ""}">$cleanBody</body>
+            <body class="${if (showQuotedText) "show-quotes " else ""}${if (useDarkTheme) "monomail-dark" else ""}">$cleanBody</body>
             </html>
             """.trimIndent()
         }

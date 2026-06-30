@@ -32,6 +32,7 @@ internal fun SwipeableEmailItem(
     isSelected: Boolean = false,
     isBulkMode: Boolean = false,
     onSelectToggle: () -> Unit = {},
+    onRangeSelect: () -> Unit = {},
     onAvatarLongClick: () -> Unit = {}
 ) {
     var optIsRead by remember(thread.isRead) { mutableStateOf(thread.isRead) }
@@ -91,6 +92,7 @@ internal fun SwipeableEmailItem(
                 isSelected = isSelected,
                 isBulkMode = true,
                 onSelectToggle = onSelectToggle,
+                onRangeSelect = onRangeSelect,
                 onAvatarLongClick = onAvatarLongClick
             )
         } else {
@@ -169,6 +171,7 @@ internal fun SwipeableEmailItem(
                 isSelected = isSelected,
                 isBulkMode = false,
                 onSelectToggle = onSelectToggle,
+                onRangeSelect = onRangeSelect,
                 onAvatarLongClick = onAvatarLongClick
             )
         }

@@ -46,6 +46,7 @@ internal fun InboxSearchBar(
     onOpenProfile: () -> Unit,
     isBulkMode: Boolean = false,
     selectedCount: Int = 0,
+    totalCount: Int = 0,
     onSelectAll: () -> Unit = {},
     onDeselectAll: () -> Unit = {},
     onDone: () -> Unit = {},
@@ -72,47 +73,85 @@ internal fun InboxSearchBar(
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         if (isBulkMode) {
-            Surface(
-                color = bulkModeContainerColor,
-                shape = MaterialTheme.shapes.extraLarge,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (selectedCount == 1) "1 selected" else "$selectedCount selected",
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+            SearchBar(
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        query = "",
+                        onQueryChange = {},
+                        onSearch = {},
+                        expanded = false,
+                        onExpandedChange = {},
+                        placeholder = {
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                AnimatedContent(
+                                    targetState = selectedCount,
+                                    label = "selectedCount",
+                                    transitionSpec = {
+                                        (fadeIn(tween(200)) + scaleIn(tween(200))).togetherWith(
+                                            fadeOut(tween(150)) + scaleOut(tween(150))
+                                        )
+                                    }
+                                ) { count ->
+                                    Text(
+                                        text = if (count == 1) "1 selected" else "$count selected",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                        },
+                        leadingIcon = { Spacer(Modifier.width(8.dp)) },
+                        trailingIcon = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (selectedCount < totalCount) {
+                                    TextButton(
+                                        onClick = onSelectAll,
+                                        shape = RoundedCornerShape(24.dp),
+                                        colors = ButtonDefaults.textButtonColors(
+                                            contentColor = MaterialTheme.colorScheme.primary
+                                        )
+                                    ) {
+                                        Text("Select all")
+                                    }
+                                } else {
+                                    TextButton(
+                                        onClick = onDeselectAll,
+                                        shape = RoundedCornerShape(24.dp),
+                                        colors = ButtonDefaults.textButtonColors(
+                                            contentColor = MaterialTheme.colorScheme.primary
+                                        )
+                                    ) {
+                                        Text("Deselect all")
+                                    }
+                                }
+                                Spacer(Modifier.width(4.dp))
+                                IconButton(
+                                    onClick = onDone,
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Close,
+                                        contentDescription = "Done",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
                     )
-                    TextButton(
-                        onClick = onSelectAll,
-                        shape = RoundedCornerShape(24.dp),
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.primary
-                        )
-                    ) {
-                        Text("Select all")
-                    }
-                    Spacer(Modifier.width(4.dp))
-                    IconButton(
-                        onClick = onDone,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            Icons.Outlined.Close,
-                            contentDescription = "Done",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
+                },
+                expanded = false,
+                onExpandedChange = {},
+                modifier = Modifier.fillMaxWidth(),
+                colors = SearchBarDefaults.colors(containerColor = bulkModeContainerColor),
+                shape = MaterialTheme.shapes.extraLarge,
+                windowInsets = WindowInsets(0.dp)
+            ) {}
         } else {
         SearchBar(
             inputField = {
