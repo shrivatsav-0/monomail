@@ -5,6 +5,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +21,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -574,13 +576,26 @@ fun InboxScreen(
                                 }
                             }
                         } else if (state == "default") {
+                            val fabInteractionSource = remember { MutableInteractionSource() }
+                            val isFabPressed by fabInteractionSource.collectIsPressedAsState()
+                            val fabScale by animateFloatAsState(
+                                targetValue = if (isFabPressed) 0.92f else 1f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                ),
+                                label = "fabScale"
+                            )
                             FloatingActionButton(
                                 onClick = onCompose,
+                                interactionSource = fabInteractionSource,
                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                                 shape = CircleShape,
                                 elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
-                                modifier = Modifier.size((52 * appSettings.navScale).dp)
+                                modifier = Modifier
+                                    .size((52 * appSettings.navScale).dp)
+                                    .graphicsLayer(scaleX = fabScale, scaleY = fabScale)
                             ) {
                                 Icon(Icons.Rounded.Edit, contentDescription = "Compose")
                             }
