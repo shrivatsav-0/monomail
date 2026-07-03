@@ -890,14 +890,31 @@ private fun MessageBody(
             // Autolink URLs then sanitize
             val cleanBody = HtmlSanitizer.sanitize(autolinkHtml(preparedBody))
             // Wrap Outlook forward/reply block so CSS can hide/show it as a unit
-            val enhancedBody = wrapOutlookQuoted(cleanBody)
+            val wrappedBody = wrapOutlookQuoted(cleanBody)
 
             // Resolve effective render mode from the user's preference
             val isStyled = (preparedBody.length > 200 && bodyIsHtml) && looksStyled(preparedBody)
             val effectiveMode = when (emailTheme) {
                 EmailTheme.FORCE_DARK -> "adapt"
+                EmailTheme.FORCE_LIGHT -> "original"
                 EmailTheme.ORIGINAL -> "original"
                 EmailTheme.AUTO -> if (isStyled) "original" else "adapt"
+            }
+
+            // In adapt mode: strip <style> tags (they override our dark CSS),
+            // bgcolor attrs (CSS selectors can't target these), and fixed widths.
+            // In original mode: only strip fixed-width attrs for responsiveness.
+            val enhancedBody = when (effectiveMode) {
+                "adapt" -> {
+                    var b = wrappedBody
+                    b = HtmlSanitizer.stripStyleTags(b)
+                    b = HtmlSanitizer.stripBgcolorAttrs(b)
+                    b = HtmlSanitizer.stripFixedWidthAttrs(b)
+                    b
+                }
+                else -> {
+                    HtmlSanitizer.stripFixedWidthAttrs(wrappedBody)
+                }
             }
 
             // Shared quoted-text CSS (same for both modes)
@@ -942,12 +959,19 @@ private fun MessageBody(
                         font-size: ${fontSize}px;
                         line-height: 1.65;
                         margin: 0;
-                        padding: 8px 20px 16px 20px;
+                        padding: 4px 4px 4px 4px !important;
                         background-color: $bgColor;
                         color: $textColor;
                         word-break: break-word;
                         overflow-wrap: break-word;
                         -webkit-font-smoothing: antialiased;
+                    }
+                    /* Force text color on ALL elements so inline color:#333 is overridden in dark mode */
+                    body.monomail-dark * {
+                        color: $textColor !important;
+                    }
+                    body.monomail-dark a, body.monomail-dark a * {
+                        color: $linkColor !important;
                     }
                     p { margin: 0 0 1em 0; }
                     p:last-child { margin-bottom: 0; }
@@ -958,31 +982,52 @@ private fun MessageBody(
                     }
                     img { display: block; margin: 8px 0; }
                     a, a * { color: $linkColor !important; text-decoration: underline !important; word-break: break-word; }
-                    h1, h2, h3, h4 { margin: 1.2em 0 0.6em 0; line-height: 1.3; }
+                    h1, h2, h3, h4 { margin: 1.2em 0 0.6em 0; line-height: 1.3; color: $textColor; }
                     h1:first-child, h2:first-child, h3:first-child { margin-top: 0; }
                     hr { border: none; border-top: 1px solid ${textColor}22; margin: 16px 0; }
                     table {
-                        width: 100% !important;
                         max-width: 100% !important;
                         border-collapse: collapse;
                         overflow-x: auto;
-                        display: block;
                         word-break: break-word;
                         margin: 8px 0;
                         font-size: ${smallFontSize}px;
                     }
-                    td, th { word-break: break-word; padding: 6px 10px; border: 1px solid ${textColor}22; }
-                    th { font-weight: 600; background-color: ${textColor}0d; }
+                    /* Wrapper to make wide tables scrollable */
+                    .monomail-table-wrap {
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                        max-width: 100%;
+                    }
+                    td, th {
+                        word-break: break-word;
+                        padding: 6px 10px;
+                    }
+                    th { font-weight: 600; }
                     pre, code { white-space: pre-wrap; font-size: ${smallFontSize}px; word-break: break-word; }
                     pre { background-color: ${textColor}0a; border-radius: 8px; padding: 12px; margin: 8px 0; overflow-x: auto; }
                     code { background-color: ${textColor}0a; border-radius: 4px; padding: 1px 4px; }
                     pre code { background: none; padding: 0; border-radius: 0; }
                     ul, ol { margin: 8px 0; padding-left: 24px; }
                     li { margin: 4px 0; }
-                    body.monomail-dark [style*="background-color:#"] {
+                    /* Strip ALL background colors in dark mode */
+                    body.monomail-dark [style*="background-color"] {
                         background-color: transparent !important;
                     }
-                    body.monomail-dark [style*="background:#"] {
+                    body.monomail-dark [style*="background:"] {
+                        background: transparent !important;
+                    }
+                    body.monomail-dark [bgcolor] {
+                        background-color: transparent !important;
+                    }
+                    body.monomail-dark td, body.monomail-dark th {
+                        background-color: transparent !important;
+                        background: transparent !important;
+                    }
+                    body.monomail-dark div, body.monomail-dark span,
+                    body.monomail-dark p, body.monomail-dark table,
+                    body.monomail-dark tr {
+                        background-color: transparent !important;
                         background: transparent !important;
                     }
                 """.trimIndent()
@@ -994,23 +1039,42 @@ private fun MessageBody(
                         font-size: ${fontSize}px;
                         line-height: 1.65;
                         margin: 0;
-                        padding: 8px 20px 16px 20px !important;
+                        padding: 4px 4px 4px 4px !important;
                         background-color: #ffffff !important;
                         color: #1a1a1a;
                         word-break: break-word;
                         overflow-wrap: break-word;
                         -webkit-font-smoothing: antialiased;
+                        /* Responsive: constrain body width */
+                        max-width: 100vw;
+                        overflow-x: hidden;
                     }
+                    /* Make all containers responsive */
                     table {
                         border-collapse: collapse;
                         margin: 8px 0;
                         font-size: ${smallFontSize}px;
+                        max-width: 100% !important;
+                        width: auto !important;
                     }
-                    td, th { word-break: break-word; padding: 6px 10px; }
+                    /* Override fixed-width tables from email templates */
+                    table[width], td[width], th[width] {
+                        max-width: 100% !important;
+                    }
+                    td, th {
+                        word-break: break-word;
+                        padding: 6px 10px;
+                        max-width: 100vw;
+                    }
                     th { font-weight: 600; }
                     img, video, iframe, embed {
                         max-width: 100% !important;
                         height: auto !important;
+                    }
+                    /* Override fixed-width images */
+                    img[width] {
+                        width: auto !important;
+                        max-width: 100% !important;
                     }
                     p { margin: 0 0 1em 0; }
                     p:last-child { margin-bottom: 0; }
@@ -1022,6 +1086,11 @@ private fun MessageBody(
                     pre code { background: none; padding: 0; border-radius: 0; }
                     ul, ol { margin: 8px 0; padding-left: 24px; }
                     li { margin: 4px 0; }
+                    /* Constrain any fixed-width div/section */
+                    div[style*="width"], section[style*="width"] {
+                        max-width: 100% !important;
+                        width: auto !important;
+                    }
                 """.trimIndent()
             }
 
@@ -1047,7 +1116,7 @@ private fun MessageBody(
             <html>
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src http: https: data:; font-src 'none'; frame-src 'none';">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src http: https: data: cid:; font-src 'none'; frame-src 'none';">
                 <style>
                     * { box-sizing: border-box; }
                     $modeCss
@@ -1113,10 +1182,22 @@ private fun MessageBody(
             }
         }
 
+        // Card bg must match the email body bg so the padding area blends seamlessly
+        val isStyledEmail = bodyIsHtml && bodyText.length > 200 && looksStyled(bodyText)
+        val cardBgColor = when (emailTheme) {
+            EmailTheme.FORCE_DARK -> MaterialTheme.colorScheme.background
+            EmailTheme.FORCE_LIGHT, EmailTheme.ORIGINAL -> androidx.compose.ui.graphics.Color.White
+            EmailTheme.AUTO -> if (isStyledEmail) androidx.compose.ui.graphics.Color.White else MaterialTheme.colorScheme.background
+        }
+
         Column {
             AndroidView(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(cardBgColor, RoundedCornerShape(16.dp))
+                    .padding(12.dp),
                 factory = { context ->
                     WebView(context).apply {
                         emailContentWebView = this
@@ -1127,7 +1208,7 @@ private fun MessageBody(
                         settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING
                         settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                         settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-                        settings.loadsImagesAutomatically = loadRemoteImages || showRemoteImages
+                        settings.loadsImagesAutomatically = true
                         try {
                             WebView::class.java.getMethod("setAllowFileAccess", Boolean::class.java)
                                 .invoke(this, false)

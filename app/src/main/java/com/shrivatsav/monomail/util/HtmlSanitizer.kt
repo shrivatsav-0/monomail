@@ -61,6 +61,41 @@ object HtmlSanitizer {
         return result.trim()
     }
 
+    /**
+     * Strip all `<style>` blocks from email HTML.
+     *
+     * Email <style> tags contain color/background/font rules that override our
+     * dark-mode CSS (since they appear later in the DOM). Removing them lets
+     * our injected <head> styles take full control in "adapt" mode.
+     *
+     * In "original" mode this should NOT be called so the email renders as-sent.
+     */
+    fun stripStyleTags(html: String): String {
+        if (html.isBlank()) return html
+        return STYLE_TAG_REGEX.replace(html, "")
+    }
+
+    /**
+     * Strip `bgcolor` HTML attributes from all tags.
+     *
+     * `bgcolor` is an old-school HTML attribute (not CSS) so CSS selectors
+     * like `[style*="background"]` don't catch it. Removing the attribute
+     * ensures dark-mode background overrides work correctly.
+     */
+    fun stripBgcolorAttrs(html: String): String {
+        if (html.isBlank()) return html
+        return BGCOLOR_ATTR_REGEX.replace(html, "")
+    }
+
+    /**
+     * Strip fixed-width HTML attributes (`width="600"` etc.) from tables and
+     * images so CSS `max-width: 100%` can make them responsive.
+     */
+    fun stripFixedWidthAttrs(html: String): String {
+        if (html.isBlank()) return html
+        return FIXED_WIDTH_ATTR_REGEX.replace(html, "")
+    }
+
     // region Regex patterns
 
     private val BASE_TAG_REGEX = Regex(
@@ -140,6 +175,27 @@ object HtmlSanitizer {
     /** Strip non-image data: URIs in href */
     private val BAD_DATA_HREF_REGEX = Regex(
         """\bhref\s*=\s*"data:(?!image\/)[^"]*"""",
+        RegexOption.IGNORE_CASE
+    )
+
+    /** Matches entire <style>...</style> blocks including content. */
+    private val STYLE_TAG_REGEX = Regex(
+        """<style\b[^>]*>[\s\S]*?</style\s*>""",
+        RegexOption.IGNORE_CASE
+    )
+
+    /** Matches bgcolor="..." or bgcolor='...' HTML attributes. */
+    private val BGCOLOR_ATTR_REGEX = Regex(
+        """\s+bgcolor\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)""",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * Matches width="NNN" HTML attributes on tags.
+     * Does not match width in CSS style attributes.
+     */
+    private val FIXED_WIDTH_ATTR_REGEX = Regex(
+        """\s+width\s*=\s*(?:"[^"]*"|'[^']*')""",
         RegexOption.IGNORE_CASE
     )
 
