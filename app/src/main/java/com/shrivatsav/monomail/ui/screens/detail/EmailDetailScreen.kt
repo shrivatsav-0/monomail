@@ -55,6 +55,7 @@ import androidx.compose.material.icons.rounded.ImageNotSupported
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -95,6 +96,11 @@ import com.shrivatsav.monomail.data.settings.EmailTheme
 import com.shrivatsav.monomail.ui.screens.inbox.AvatarCircle
 import com.shrivatsav.monomail.data.pgp.PgpDecryptionResult
 import com.shrivatsav.monomail.util.HtmlSanitizer
+import com.shrivatsav.monomail.util.EmailImageGenerator
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -117,6 +123,11 @@ fun EmailDetailScreen(
     val state by viewModel.state.collectAsState()
     val isStarred by viewModel.isStarred.collectAsState()
     val decryptedBodies by viewModel.decryptedBodies.collectAsState()
+
+    var isGeneratingImage by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var showShareModal by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(
@@ -149,6 +160,34 @@ fun EmailDetailScreen(
                                 imageVector = if (starred) Icons.Rounded.Star else Icons.Rounded.StarBorder,
                                 contentDescription = if (starred) "Unstar" else "Star",
                                 tint = if (starred) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                    if (isGeneratingImage) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp).padding(4.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    } else {
+                        IconButton(onClick = { 
+                            if (state is EmailDetailState.Success) {
+                                val emails = (state as EmailDetailState.Success).emails
+                                if (emails.size > 1) {
+                                    showShareModal = true
+                                } else if (emails.isNotEmpty()) {
+                                    isGeneratingImage = true
+                                    coroutineScope.launch {
+                                        EmailImageGenerator.shareEmailsAsImage(context, emails, emails.first().subject, fontScaleMultiplier)
+                                        isGeneratingImage = false
+                                    }
+                                }
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = "Share as Image",
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -287,9 +326,86 @@ fun EmailDetailScreen(
             }
         }
     }
+
+    if (showShareModal && state is EmailDetailState.Success) {
+        val emails = (state as EmailDetailState.Success).emails
+        ShareEmailSelectionModal(
+            emails = emails,
+            subject = emails.firstOrNull()?.subject ?: "",
+            onDismiss = { showShareModal = false },
+            onConfirm = { selectedEmails ->
+                showShareModal = false
+                isGeneratingImage = true
+                coroutineScope.launch {
+                    EmailImageGenerator.shareEmailsAsImage(context, selectedEmails, selectedEmails.firstOrNull()?.subject ?: "", fontScaleMultiplier)
+                    isGeneratingImage = false
+                }
+            }
+        )
+    }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ThreadConversationContent(
+fun ShareEmailSelectionModal(
+    emails: List<Email>,
+    subject: String,
+    onDismiss: () -> Unit,
+    onConfirm: (List<Email>) -> Unit
+) {
+    var selectedIds by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(emails.map { it.id }.toSet()) }
+    
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.background
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            Text("Share Emails", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                items(emails) { email ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (selectedIds.contains(email.id)) selectedIds = selectedIds - email.id
+                                else selectedIds = selectedIds + email.id
+                            }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        androidx.compose.material3.Checkbox(
+                            checked = selectedIds.contains(email.id),
+                            onCheckedChange = null
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(email.from, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                            Text(
+                                text = email.snippet,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            androidx.compose.material3.Button(
+                onClick = { onConfirm(emails.filter { it.id in selectedIds }) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = selectedIds.isNotEmpty()
+            ) {
+                Text("Generate Image")
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+fun ThreadConversationContent(
     emails: List<Email>,
     decryptedBodies: Map<String, PgpDecryptionResult> = emptyMap(),
     modifier: Modifier = Modifier,
@@ -319,10 +435,9 @@ private fun ThreadConversationContent(
         }
     }
     val subject = emails.firstOrNull()?.subject ?: "(no subject)"
-    LazyColumn(
-        modifier = modifier.fillMaxSize()
+    Column(
+        modifier = modifier.fillMaxSize().verticalScroll(androidx.compose.foundation.rememberScrollState())
     ) {
-        item {
         Text(
             text = subject,
             style = MaterialTheme.typography.titleLarge,
@@ -339,8 +454,8 @@ private fun ThreadConversationContent(
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
-        } 
-        itemsIndexed(emails, key = { _, email -> email.id }) { index, email ->
+        
+        emails.forEachIndexed { index, email ->
             val isExpanded = expandedMap[email.id] ?: true
             if (isConversationView) {
                 Row(
@@ -552,7 +667,7 @@ private fun ThreadConversationContent(
                 )
             }
         }
-        item {
+
             Spacer(modifier = Modifier.height(24.dp))
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
@@ -605,7 +720,7 @@ private fun ThreadConversationContent(
                     Text("Forward", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
                 }
             }
-        }
+        
     }
 }
 
@@ -870,7 +985,7 @@ private fun MessageBody(
 
         val htmlContent = remember(email.id, bodyText, bgColor, textColor, linkColor, fontScaleMultiplier, showQuotedText, loadRemoteImages, showRemoteImages, renderMarkdown, emailTheme) {
             // Determine body: preserve or strip quoted text
-            val displayBody = if (showQuotedText) bodyText else stripQuotedText(bodyText)
+            val displayBody = if (showQuotedText) bodyText else HtmlSanitizer.stripQuotedText(bodyText)
 
             // Convert markdown to HTML for plain text bodies if enabled
             val preparedBody = if (bodyIsHtml) {
@@ -954,8 +1069,12 @@ private fun MessageBody(
             val modeCss = if (effectiveMode == "adapt") {
                 """
                     /* === Adapted (dark-friendly) mode === */
+                    @font-face {
+                        font-family: 'GoogleSans';
+                        src: url('file:///android_res/font/google_sans_flex.ttf') format('truetype');
+                    }
                     body {
-                        font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+                        font-family: 'GoogleSans', -apple-system, 'Helvetica Neue', Arial, sans-serif;
                         font-size: ${fontSize}px;
                         line-height: 1.65;
                         margin: 0;
@@ -1034,8 +1153,12 @@ private fun MessageBody(
             } else {
                 """
                     /* === Original (as-sent) mode === */
+                    @font-face {
+                        font-family: 'GoogleSans';
+                        src: url('file:///android_res/font/google_sans_flex.ttf') format('truetype');
+                    }
                     body {
-                        font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+                        font-family: 'GoogleSans', -apple-system, 'Helvetica Neue', Arial, sans-serif;
                         font-size: ${fontSize}px;
                         line-height: 1.65;
                         margin: 0;
@@ -1211,7 +1334,7 @@ private fun MessageBody(
                         settings.loadsImagesAutomatically = true
                         try {
                             WebView::class.java.getMethod("setAllowFileAccess", Boolean::class.java)
-                                .invoke(this, false)
+                                .invoke(this, true)
                         } catch (_: Exception) {}
                         try {
                             WebView::class.java.getMethod("setAllowContentAccess", Boolean::class.java)
@@ -1260,7 +1383,7 @@ private fun MessageBody(
                 update = { webView ->
                     if (webView.tag != htmlContent) {
                         webView.tag = htmlContent
-                        webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
+                        webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "UTF-8", null)
                     }
                 }
             )
@@ -1572,59 +1695,7 @@ private fun formatDetailDate(epochMillis: Long): String {
     if (epochMillis == 0L) return ""
     return detailDateFormat.format(Date(epochMillis))
 }
-private fun stripQuotedText(html: String): String {
-    var result = html
-    result = result.replace(Regex("<blockquote[^>]*>[\\s\\S]*?</blockquote>", RegexOption.IGNORE_CASE), "")
-    result = result.replace(Regex("<div\\s+class=\"gmail_quote\"[^>]*>[\\s\\S]*?</div>", RegexOption.IGNORE_CASE), "")
-    result = result.replace(Regex("<div\\s+class=\"gmail_extra\"[^>]*>[\\s\\S]*?</div>", RegexOption.IGNORE_CASE), "")
-    result = result.replace(Regex("<br>\\s*On .{10,80} wrote:\\s*<br>", RegexOption.IGNORE_CASE), "")
-    result = result.replace(Regex("\\n\\s*On .{10,80} wrote:\\s*\\n", RegexOption.IGNORE_CASE), "")
-    result = result.replace(Regex("(^|<br>)(&gt;|>)\\s?.*", RegexOption.IGNORE_CASE), "")
-    // Outlook web / 365 quoted text markers
-    result = result.replace(Regex("<div\\s+id=\"appendonsend\"[^>]*>\\s*</div>", RegexOption.IGNORE_CASE), "")
-    // divRplyFwdMsg contains nested <div> elements — use depth-counting to strip fully
-    result = stripOutlookPreviousMessage(result)
-    return result.trim()
-}
 
-/**
- * Strips the Outlook forward/reply section completely, including:
- * - the &lt;div id="appendonsend"&gt; marker
- * - the &lt;hr&gt; separator
- * - the &lt;div id="divRplyFwdMsg"&gt; headers (From/Sent/To/Subject)
- * - any content after it up to &lt;/body&gt; (the previous message body)
- */
-private fun stripOutlookPreviousMessage(html: String): String {
-    var result = html
-
-    // Find appendonsend marker first (it precedes the forward block)
-    val appendonPattern = Regex("<div\\s+[^>]*id=\"appendonsend\"[^>]*>\\s*</div>", RegexOption.IGNORE_CASE)
-    val appendonMatch = appendonPattern.find(result)
-
-    // Find divRplyFwdMsg
-    val fwdPattern = Regex("<div\\s+[^>]*id=\"divRplyFwdMsg\"[^>]*>", RegexOption.IGNORE_CASE)
-    val fwdMatch = fwdPattern.find(result)
-
-    if (appendonMatch == null && fwdMatch == null) return result
-
-    // Determine strip start: use appendonsend if found, otherwise divRplyFwdMsg
-    val stripStart = when {
-        appendonMatch != null -> appendonMatch.range.first
-        fwdMatch != null -> fwdMatch.range.first
-        else -> return result
-    }
-
-    // Strip everything from stripStart to </body> (or end of string)
-    val bodyEnd = result.indexOf("</body>", ignoreCase = true, startIndex = stripStart)
-    val effectiveEnd = if (bodyEnd >= stripStart) bodyEnd else result.length
-
-    result = result.substring(0, stripStart) + result.substring(effectiveEnd)
-
-    // Clean up any remaining <hr> separators
-    result = result.replace(Regex("\\s*<hr[^>]*>\\s*", RegexOption.IGNORE_CASE), " ")
-
-    return result.trim()
-}
 
 /**
  * Wraps the Outlook forward/reply block in a &lt;div class="outlook-quoted"&gt;
