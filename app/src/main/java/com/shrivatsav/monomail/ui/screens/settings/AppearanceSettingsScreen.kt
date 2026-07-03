@@ -76,6 +76,22 @@ internal fun AppearanceSettingsScreen(
                 checked = settings.renderMarkdown,
                 onCheckedChange = { viewModel.setRenderMarkdown(it) }
             )
+            CardDivider()
+            EmailColorsRow(
+                currentTheme = settings.emailTheme,
+                onThemeSelected = { viewModel.setEmailTheme(it) }
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        SettingsCard {
+            SectionHeader(icon = Icons.Rounded.DeveloperMode, title = "Developer")
+            SettingsToggleRow(
+                icon = Icons.Rounded.BugReport,
+                title = "Developer Mode",
+                subtitle = "Enable share options for raw HTML/MD/plain text email body",
+                checked = settings.isDeveloperMode,
+                onCheckedChange = { viewModel.setDeveloperMode(it) }
+            )
         }
     }
 }

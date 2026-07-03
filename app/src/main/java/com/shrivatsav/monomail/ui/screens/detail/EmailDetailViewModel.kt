@@ -8,6 +8,7 @@ import com.shrivatsav.monomail.data.model.Email
 import com.shrivatsav.monomail.data.pgp.PgpDecryptionResult
 import com.shrivatsav.monomail.data.pgp.PgpManager
 import com.shrivatsav.monomail.data.repository.EmailRepository
+import com.shrivatsav.monomail.data.settings.EmailTheme
 import com.shrivatsav.monomail.data.settings.FontScale
 import com.shrivatsav.monomail.data.settings.SettingsDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -63,6 +64,14 @@ class EmailDetailViewModel @Inject constructor(
 
     val renderMarkdown: StateFlow<Boolean> = settingsDataStore.settingsFlow
         .map { it.renderMarkdown }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val emailTheme: StateFlow<EmailTheme> = settingsDataStore.settingsFlow
+        .map { it.emailTheme }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), EmailTheme.AUTO)
+
+    val isDeveloperMode: StateFlow<Boolean> = settingsDataStore.settingsFlow
+        .map { it.isDeveloperMode }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
     val state: StateFlow<EmailDetailState> = kotlinx.coroutines.flow.combine(
         repository.getThreadEmailsFlow(threadId),
