@@ -6,7 +6,6 @@ import com.shrivatsav.monomail.SentEmailEvent
 import com.shrivatsav.monomail.auth.AuthManager
 import com.shrivatsav.monomail.auth.UserProfile
 import com.shrivatsav.monomail.data.model.EmailThread
-import com.shrivatsav.monomail.data.repository.ContactSuggestionProvider
 import com.shrivatsav.monomail.data.repository.EmailRepository
 import com.shrivatsav.monomail.data.settings.AppSettings
 import com.shrivatsav.monomail.data.settings.SyncFrequency
@@ -50,7 +49,6 @@ sealed class InboxState {
 @HiltViewModel
 class InboxViewModel @Inject constructor(
     private val repository: EmailRepository,
-    private val contactProvider: ContactSuggestionProvider,
     private val authManager: AuthManager,
     private val settingsDataStore: SettingsDataStore,
     private val sentEmailEvents: MutableSharedFlow<SentEmailEvent>,
