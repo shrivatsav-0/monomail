@@ -77,6 +77,14 @@ internal fun AppearanceSettingsScreen(
                 onCheckedChange = { viewModel.setRenderMarkdown(it) }
             )
             CardDivider()
+            SettingsToggleRow(
+                icon = Icons.Rounded.TextFields,
+                title = "System Font",
+                subtitle = "Use system font instead of Google Sans",
+                checked = settings.useSystemFont,
+                onCheckedChange = { viewModel.setUseSystemFont(it) }
+            )
+            CardDivider()
             EmailColorsRow(
                 currentTheme = settings.emailTheme,
                 onThemeSelected = { viewModel.setEmailTheme(it) }

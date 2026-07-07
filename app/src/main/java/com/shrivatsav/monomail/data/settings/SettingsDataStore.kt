@@ -48,6 +48,7 @@ data class EmailTemplate(
 data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val fontScale: FontScale = FontScale.DEFAULT,
+    val useSystemFont: Boolean = false,
     val showDividers: Boolean = false,
     val compactList: Boolean = false,
     val showSnippet: Boolean = true,
@@ -79,6 +80,7 @@ class SettingsDataStore(private val context: Context) {
     private object Keys {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val FONT_SCALE = stringPreferencesKey("font_scale")
+        val USE_SYSTEM_FONT = booleanPreferencesKey("use_system_font")
         val SHOW_DIVIDERS = booleanPreferencesKey("show_dividers")
         val COMPACT_LIST = booleanPreferencesKey("compact_list")
         val SHOW_SNIPPET = booleanPreferencesKey("show_snippet")
@@ -109,6 +111,7 @@ class SettingsDataStore(private val context: Context) {
         return AppSettings(
             themeMode = prefs[Keys.THEME_MODE]?.let { ThemeMode.valueOf(it) } ?: ThemeMode.SYSTEM,
             fontScale = prefs[Keys.FONT_SCALE]?.let { FontScale.valueOf(it) } ?: FontScale.DEFAULT,
+            useSystemFont = prefs[Keys.USE_SYSTEM_FONT] ?: false,
             showDividers = prefs[Keys.SHOW_DIVIDERS] ?: false,
             compactList = prefs[Keys.COMPACT_LIST] ?: false,
             showSnippet = prefs[Keys.SHOW_SNIPPET] ?: true,
@@ -151,6 +154,9 @@ class SettingsDataStore(private val context: Context) {
     }
     suspend fun setFontScale(scale: FontScale) {
         context.dataStore.edit { it[Keys.FONT_SCALE] = scale.name }
+    }
+    suspend fun setUseSystemFont(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.USE_SYSTEM_FONT] = enabled }
     }
     suspend fun setShowDividers(show: Boolean) {
         context.dataStore.edit { it[Keys.SHOW_DIVIDERS] = show }

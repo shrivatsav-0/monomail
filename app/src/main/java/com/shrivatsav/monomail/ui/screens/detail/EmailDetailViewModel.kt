@@ -126,16 +126,20 @@ class EmailDetailViewModel @Inject constructor(
                 if (s is EmailDetailState.Success) {
                     val decrypted = mutableMapOf<String, PgpDecryptionResult>()
                     for (email in s.emails) {
-                        val isPgp = pgpManager.isPgpMessage(email.body)
-                        Log.d("EmailDetailVM", "Email ${email.id}: isPgp=$isPgp, bodyStart=${email.body.take(80)}")
-                        if (isPgp) {
-                            val result = withContext(Dispatchers.Default) {
-                                pgpManager.decryptBody(email.body)
+                        try {
+                            val isPgp = withContext(Dispatchers.Default) {
+                                pgpManager.isPgpMessage(email.body)
                             }
-                            Log.d("EmailDetailVM", "Decrypt result: ${result != null}")
-                            if (result != null) {
-                                decrypted[email.id] = result
+                            if (isPgp) {
+                                val result = withContext(Dispatchers.Default) {
+                                    pgpManager.decryptBody(email.body)
+                                }
+                                if (result != null) {
+                                    decrypted[email.id] = result
+                                }
                             }
+                        } catch (e: Exception) {
+                            Log.e("EmailDetailVM", "PGP processing failed for ${email.id}", e)
                         }
                     }
                     _decryptedBodies.value = decrypted

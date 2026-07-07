@@ -984,31 +984,35 @@ private fun MessageBody(
         // Images blocked banner (shown when loadRemoteImages is off and showRemoteImages is still false)
 
         val htmlContent = remember(email.id, bodyText, bgColor, textColor, linkColor, fontScaleMultiplier, showQuotedText, loadRemoteImages, showRemoteImages, renderMarkdown, emailTheme) {
-            // Determine body: preserve or strip quoted text
-            val displayBody = if (showQuotedText) bodyText else HtmlSanitizer.stripQuotedText(bodyText)
+            val displayBody = try {
+                // Determine body: preserve or strip quoted text
+                val body = if (showQuotedText) bodyText else HtmlSanitizer.stripQuotedText(bodyText)
 
-            // Convert markdown to HTML for plain text bodies if enabled
-            val preparedBody = if (bodyIsHtml) {
-                displayBody
-            } else if (renderMarkdown) {
-                try {
-                    markdownToHtml(displayBody)
-                } catch (_: Exception) {
-                    TextUtils.htmlEncode(displayBody)
-                        .replace("\n", "<br>")
+                // Convert markdown to HTML for plain text bodies if enabled
+                if (bodyIsHtml) {
+                    body
+                } else if (renderMarkdown) {
+                    try {
+                        markdownToHtml(body)
+                    } catch (_: Exception) {
+                        TextUtils.htmlEncode(body).replace("\n", "<br>")
+                    }
+                } else {
+                    TextUtils.htmlEncode(body).replace("\n", "<br>")
                 }
-            } else {
-                TextUtils.htmlEncode(displayBody)
-                    .replace("\n", "<br>")
+            } catch (e: Exception) {
+                android.util.Log.e("MessageBody", "Failed to process email body", e)
+                // Fallback: show raw text
+                TextUtils.htmlEncode(bodyText).replace("\n", "<br>")
             }
 
             // Autolink URLs then sanitize
-            val cleanBody = HtmlSanitizer.sanitize(autolinkHtml(preparedBody))
+            val cleanBody = HtmlSanitizer.sanitize(autolinkHtml(displayBody))
             // Wrap Outlook forward/reply block so CSS can hide/show it as a unit
             val wrappedBody = wrapOutlookQuoted(cleanBody)
 
             // Resolve effective render mode from the user's preference
-            val isStyled = (preparedBody.length > 200 && bodyIsHtml) && looksStyled(preparedBody)
+            val isStyled = (displayBody.length > 200 && bodyIsHtml) && looksStyled(displayBody)
             val effectiveMode = when (emailTheme) {
                 EmailTheme.FORCE_DARK -> "adapt"
                 EmailTheme.FORCE_LIGHT -> "original"
@@ -1377,13 +1381,38 @@ private fun MessageBody(
                                 }
                                 return super.shouldOverrideUrlLoading(view, url)
                             }
+                            // Log sub-resource HTTP errors (e.g. images that return 404)
+                            // ponytail: logs only — bulk/notification UI would require a JS bridge
+                            @Suppress("DEPRECATION")
+                            @Deprecated("Deprecated in Java")
+                            override fun onReceivedHttpError(
+                                view: android.webkit.WebView?,
+                                request: android.webkit.WebResourceRequest?,
+                                errorResponse: android.webkit.WebResourceResponse?
+                            ) {
+                                super.onReceivedHttpError(view, request, errorResponse)
+                                if (request?.isForMainFrame != true) {
+                                    android.util.Log.w("EmailWebView", "HTTP ${errorResponse?.statusCode} for ${request?.url}")
+                                }
+                            }
+                            override fun onReceivedError(
+                                view: android.webkit.WebView?,
+                                request: android.webkit.WebResourceRequest?,
+                                error: android.webkit.WebResourceError?
+                            ) {
+                                android.util.Log.e("EmailWebView", "WebView error: ${error?.description} on ${request?.url}")
+                            }
                         }
                     }
                 },
                 update = { webView ->
                     if (webView.tag != htmlContent) {
                         webView.tag = htmlContent
-                        webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "UTF-8", null)
+                        try {
+                            webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "UTF-8", null)
+                        } catch (e: Exception) {
+                            android.util.Log.e("EmailWebView", "Failed to load email HTML content", e)
+                        }
                     }
                 }
             )
