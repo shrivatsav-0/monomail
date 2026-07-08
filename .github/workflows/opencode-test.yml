@@ -3,30 +3,59 @@ name: Test OpenCode
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install OpenCode
-        run: |
-          npm install -g opencode-ai
+        run: npm install -g opencode-ai
 
-      - name: Create sample commits
+      - name: Verify OpenCode
         run: |
-          cat <<EOF > commit_log.txt
-          feat: add dark mode
-          fix: resolve login issue
-          chore: update dependencies
-          EOF
+          opencode --version
+          opencode run --help
 
-      - name: Run OpenCode
+      - name: Gather commits since previous tag
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+
+          if [ -n "$PREV_TAG" ]; then
+            RANGE="$PREV_TAG..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+
+          echo "Using range: $RANGE"
+
+          git log "$RANGE" \
+            --pretty=format:'%s' \
+            --no-merges \
+            --invert-grep \
+            --grep='^chore: bump version' \
+            > commit_log.txt
+
+          if [ ! -s commit_log.txt ]; then
+            echo "No user-facing changes." > commit_log.txt
+          fi
+
+          echo "===== COMMITS ====="
+          cat commit_log.txt
+
+      - name: Generate release notes
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         run: |
-          PROMPT="Write concise, user-facing GitHub release notes.
+          PROMPT=$(cat <<'EOF'
+          Write concise, user-facing GitHub release notes.
 
           Group changes under:
           - Features
@@ -40,17 +69,25 @@ jobs:
           Output Markdown only.
 
           Commits:
+          EOF
+          )
+
+          PROMPT="$PROMPT
+
           $(cat commit_log.txt)"
 
-          echo "===== PROMPT ====="
-          echo "$PROMPT"
-
-          opencode "$PROMPT" \
+          opencode run "$PROMPT" \
             --model opencode/mimo-v2.5-free \
-            --print-logs
+            --print-logs \
+            | tee release_notes.md
 
-      - name: Show output
-        if: always()
+      - name: Print release notes
         run: |
-          ls -la
-          test -f release_notes.md && cat release_notes.md || true
+          echo "===== RELEASE NOTES ====="
+          cat release_notes.md
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release_notes.md
