@@ -31,7 +31,7 @@ class RetrofitClient(
         }
         val response = chain.proceed(newRequest)
 
-        if (response.code in (401, 403)) {
+        if (response.code == 401 || response.code == 403) {
             response.close()
             // Retry with backoff: up to 2 refreshes, delays 500ms then 1000ms
             for (attempt in 1..2) {
@@ -53,7 +53,7 @@ class RetrofitClient(
                         .build()
                     val retryResponse = chain.proceed(retryRequest)
                     // If the retry succeeded (not 401/403), return it
-                    if (retryResponse.code !in (401, 403)) {
+                    if (retryResponse.code != 401 && retryResponse.code != 403) {
                         return@Interceptor retryResponse
                     }
                     retryResponse.close()

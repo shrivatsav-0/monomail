@@ -184,8 +184,7 @@ class MicrosoftAuthManager(private val context: Context, private val accountMana
                         }
                         is MsalClientException -> {
                             when (exception.errorCode) {
-                                MsalClientException.NETWORK_NOT_AVAILABLE,
-                                MsalClientException.NO_NETWORK_CONNECTIVITY -> {
+                                MsalClientException.DEVICE_NETWORK_NOT_AVAILABLE -> {
                                     android.util.Log.w("MicrosoftAuth", "Network unavailable for $accountId: ${exception.message}")
                                 }
                                 else -> {
