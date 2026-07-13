@@ -28,5 +28,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Mono mail"
 include(":app")
-include(":core:model")
-include(":core:network")

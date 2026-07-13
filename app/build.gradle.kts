@@ -104,21 +104,6 @@ android {
     }
 }
 
-androidComponents {
-    val localProps = Properties()
-    val localPropsFile = rootProject.file("local.properties")
-    if (localPropsFile.exists()) {
-        localProps.load(FileInputStream(localPropsFile))
-    }
-    val isDevBuild = localProps.getProperty("devBuild") == "true"
-    
-    beforeVariants(selector().withBuildType("release")) { variantBuilder ->
-        if (isDevBuild) {
-            variantBuilder.enable = false
-        }
-    }
-}
-
 dependencies {
     // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
@@ -152,12 +137,11 @@ dependencies {
     implementation(libs.google.play.services.auth)
     "playstoreImplementation"(libs.firebase.messaging)
 
-    // Local modules
-    implementation(project(":core:model"))
-
-    // Networking (now decoupled)
-    implementation(project(":core:network"))
-    implementation("com.google.code.gson:gson:2.11.0") // Needed for workers & utils
+    // Networking
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
 
     // Room
     implementation(libs.androidx.room.runtime)

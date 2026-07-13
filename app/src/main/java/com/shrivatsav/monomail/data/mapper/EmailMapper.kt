@@ -103,9 +103,8 @@ object EmailMapper {
     }
     private fun extractBody(part: MessagePart?): BodyResult {
         if (part == null) return BodyResult("", isHtml = true)
-        val data = part.body?.data
-        if (data != null && part.parts.isNullOrEmpty()) {
-            val decoded = decodeBase64Url(data)
+        if (part.body?.data != null && part.parts.isNullOrEmpty()) {
+            val decoded = decodeBase64Url(part.body.data)
             if (part.mimeType == MIME_TEXT_HTML) return BodyResult(decoded, isHtml = true)
             if (part.mimeType == MIME_TEXT_PLAIN) return BodyResult(decoded, isHtml = false)
         }
@@ -121,9 +120,8 @@ object EmailMapper {
 
     private fun findChildWithData(children: List<MessagePart>, mimeType: String): BodyResult? {
         for (child in children) {
-            val data = child.body?.data
-            if (child.mimeType == mimeType && data != null) {
-                return BodyResult(decodeBase64Url(data), isHtml = mimeType == MIME_TEXT_HTML)
+            if (child.mimeType == mimeType && child.body?.data != null) {
+                return BodyResult(decodeBase64Url(child.body.data), isHtml = mimeType == MIME_TEXT_HTML)
             }
         }
         return null
@@ -177,16 +175,14 @@ object EmailMapper {
     private fun extractAttachments(part: MessagePart?, messageId: String): List<com.shrivatsav.monomail.data.model.EmailAttachmentInfo> {
         if (part == null) return emptyList()
         val attachments = mutableListOf<com.shrivatsav.monomail.data.model.EmailAttachmentInfo>()
-        val attachmentId = part.body?.attachmentId
-        val filename = part.filename
-        if (!filename.isNullOrEmpty() && attachmentId != null) {
+        if (!part.filename.isNullOrEmpty() && part.body?.attachmentId != null) {
             attachments.add(
                 com.shrivatsav.monomail.data.model.EmailAttachmentInfo(
-                    id = attachmentId,
+                    id = part.body.attachmentId,
                     messageId = messageId,
                     mimeType = part.mimeType ?: "application/octet-stream",
-                    name = filename,
-                    size = part.body?.size ?: 0
+                    name = part.filename,
+                    size = part.body.size ?: 0
                 )
             )
         }
