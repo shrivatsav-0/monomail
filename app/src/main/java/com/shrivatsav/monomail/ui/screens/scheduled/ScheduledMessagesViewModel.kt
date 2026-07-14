@@ -3,8 +3,8 @@ package com.shrivatsav.monomail.ui.screens.scheduled
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shrivatsav.monomail.auth.AuthManager
-import com.shrivatsav.monomail.data.local.ScheduledMessageEntity
-import com.shrivatsav.monomail.data.repository.EmailRepository
+import com.shrivatsav.monomail.core.database.local.ScheduledMessageEntity
+import com.shrivatsav.monomail.core.data.repository.EmailRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

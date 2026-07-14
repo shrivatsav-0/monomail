@@ -8,7 +8,7 @@ import com.shrivatsav.monomail.auth.AuthManager
 import com.shrivatsav.monomail.data.model.Email
 import com.shrivatsav.monomail.data.pgp.PgpDecryptionResult
 import com.shrivatsav.monomail.data.pgp.PgpManager
-import com.shrivatsav.monomail.data.repository.EmailRepository
+import com.shrivatsav.monomail.core.data.repository.EmailRepository
 import com.shrivatsav.monomail.data.settings.EmailTheme
 import com.shrivatsav.monomail.data.settings.FontScale
 import com.shrivatsav.monomail.data.settings.SettingsDataStore

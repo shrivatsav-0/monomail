@@ -21,7 +21,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.shrivatsav.monomail.auth.AccountManager
-import com.shrivatsav.monomail.data.repository.EmailRepository
+import com.shrivatsav.monomail.core.data.repository.EmailRepository
 import com.shrivatsav.monomail.model.InboxTab
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject

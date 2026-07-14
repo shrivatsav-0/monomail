@@ -1,8 +1,8 @@
 package com.shrivatsav.monomail.feature.compose
 
-import com.shrivatsav.monomail.data.repository.suggestContacts
-import com.shrivatsav.monomail.data.provider.SendAsAlias
-import com.shrivatsav.monomail.data.repository.EmailContact
+import com.shrivatsav.monomail.core.data.repository.suggestContacts
+import com.shrivatsav.monomail.core.network.provider.SendAsAlias
+import com.shrivatsav.monomail.core.data.repository.EmailContact
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically

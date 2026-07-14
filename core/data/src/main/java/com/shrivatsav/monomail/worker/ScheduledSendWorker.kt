@@ -6,10 +6,10 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.shrivatsav.monomail.data.local.AppDatabase
+import com.shrivatsav.monomail.core.database.local.AppDatabase
 import com.shrivatsav.monomail.data.model.EmailAttachment
-import com.shrivatsav.monomail.data.repository.EmailRepository
-import com.shrivatsav.monomail.data.repository.SendEmailParams
+import com.shrivatsav.monomail.core.data.repository.EmailRepository
+import com.shrivatsav.monomail.core.data.repository.SendEmailParams
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.io.File

@@ -11,8 +11,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import com.shrivatsav.monomail.auth.AccountManager
-import com.shrivatsav.monomail.data.repository.EmailRepository
-import com.shrivatsav.monomail.data.repository.SendEmailParams
+import com.shrivatsav.monomail.core.data.repository.EmailRepository
+import com.shrivatsav.monomail.core.data.repository.SendEmailParams
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors

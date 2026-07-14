@@ -22,7 +22,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.shrivatsav.monomail.auth.AccountManager
 import com.shrivatsav.monomail.auth.AuthManager
-import com.shrivatsav.monomail.data.repository.EmailRepository
+import com.shrivatsav.monomail.core.data.repository.EmailRepository
 import com.shrivatsav.monomail.data.settings.FontScale
 import com.shrivatsav.monomail.data.settings.SettingsDataStore
 import com.shrivatsav.monomail.ui.navigation.NavGraph
