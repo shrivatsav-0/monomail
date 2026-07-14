@@ -26,6 +26,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import com.shrivatsav.monomail.ui.theme.cornerShape
+import com.shrivatsav.monomail.ui.components.SlideSheet
 import androidx.compose.foundation.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -300,54 +302,22 @@ private fun ProviderSheet(
     onMicrosoftSignIn: () -> Unit,
     onImapClick: () -> Unit,
 ) {
-    androidx.compose.ui.window.Dialog(
-        onDismissRequest = onDismiss,
-        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+    SlideSheet(
+        onDismiss = onDismiss,
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 24.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(onClick = onDismiss),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Surface(
-                shape = cornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 8.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .padding(bottom = androidx.compose.foundation.layout.WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
-                    .clickable(onClick = {})
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(32.dp)
-                            .height(4.dp)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), CircleShape)
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        text = "Choose your provider",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    ProviderButtons(
-                        state = state,
-                        onGoogleSignIn = onGoogleSignIn,
-                        onMicrosoftSignIn = onMicrosoftSignIn,
-                        onImapClick = onImapClick,
-                    )
-                }
-            }
-        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Choose your provider",
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        ProviderButtons(
+            state = state,
+            onGoogleSignIn = onGoogleSignIn,
+            onMicrosoftSignIn = onMicrosoftSignIn,
+            onImapClick = onImapClick,
+        )
     }
 }
 

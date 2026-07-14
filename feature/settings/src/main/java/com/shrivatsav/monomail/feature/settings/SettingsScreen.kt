@@ -14,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import com.shrivatsav.monomail.ui.theme.cornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -146,17 +145,7 @@ private fun SettingsHubScreen(
             bottom = 0.dp
         ),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text("Settings", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
-            )
+            SettingsDetailTopBar(title = "Settings", onNavigateBack = onNavigateBack)
         }
     ) { padding ->
         Column(

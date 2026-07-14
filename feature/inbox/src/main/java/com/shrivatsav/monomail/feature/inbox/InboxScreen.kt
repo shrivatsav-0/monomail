@@ -15,6 +15,7 @@ import androidx.compose.material3.TextButton
 import com.shrivatsav.monomail.feature.inbox.components.*
 
 import com.shrivatsav.monomail.ui.components.AvatarCircle
+import com.shrivatsav.monomail.ui.components.TooltipIconButton
 import com.shrivatsav.monomail.model.InboxTab
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -843,7 +844,7 @@ fun InboxScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    SupportIconAction(
+                    TooltipIconButton(
                         icon = Icons.Rounded.Share,
                         contentDescription = "Share Monomail",
                         onClick = {
@@ -857,12 +858,12 @@ fun InboxScreen(
                             context.startActivity(android.content.Intent.createChooser(intent, "Share Monomail"))
                         }
                     )
-                    SupportIconAction(
+                    TooltipIconButton(
                         icon = Icons.Rounded.BugReport,
                         contentDescription = "Report Issue",
                         onClick = { uriHandler.openUri("https://github.com/shrivatsav-0/monomail/issues") }
                     )
-                    SupportIconAction(
+                    TooltipIconButton(
                         icon = Icons.Rounded.AccountBalanceWallet,
                         contentDescription = "Donate Crypto (BASE)",
                         onClick = {
@@ -1386,41 +1387,6 @@ private fun SupportCard(
         }
     }
 }
-
-/**
- * Secondary support action — icon-only tap target with a long-press
- * tooltip for the label. Lower visual priority than SupportCard.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SupportIconAction(
-    icon: ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit
-) {
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-        tooltip = { PlainTooltip { Text(contentDescription) } },
-        state = rememberTooltipState()
-    ) {
-        IconButton(
-            onClick = onClick,
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-
 
 @Composable
 private fun LongPressAction(

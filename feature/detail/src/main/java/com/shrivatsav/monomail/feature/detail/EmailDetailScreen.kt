@@ -565,22 +565,7 @@ private fun ConversationEmailItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "to:",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = email.to,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                ToRow(email = email)
                 if (!isExpanded) {
                     val snippetText = remember(email.snippet) {
                         email.snippet
@@ -942,7 +927,7 @@ private fun SenderDetails(email: Email, isMsgUnread: Boolean) {
 }
 
 @Composable
-private fun ToRow(email: Email, onToggleCcBcc: () -> Unit) {
+private fun ToRow(email: Email, onToggleCcBcc: (() -> Unit)? = null) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = "to:",
@@ -956,8 +941,17 @@ private fun ToRow(email: Email, onToggleCcBcc: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
-                .clickable { if (email.cc.isNotBlank() || email.bcc.isNotBlank()) onToggleCcBcc() }
+            modifier = Modifier
+                .weight(1f)
+                .then(
+                    if (onToggleCcBcc != null) {
+                        Modifier.clickable {
+                            if (email.cc.isNotBlank() || email.bcc.isNotBlank()) onToggleCcBcc()
+                        }
+                    } else {
+                        Modifier
+                    }
+                )
         )
     }
 }

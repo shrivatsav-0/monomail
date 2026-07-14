@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import com.shrivatsav.monomail.ui.theme.cornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Reply
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.*
@@ -29,14 +30,29 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.unit.sp
 import com.shrivatsav.monomail.core.data.settings.*
+import com.shrivatsav.monomail.ui.components.SlideSheet
 import com.shrivatsav.monomail.ui.theme.MonoOpacity
 import com.shrivatsav.monomail.ui.theme.MonoSpring
 
 // ── Shared UI Primitives ────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun SettingsDetailTopBar(title: String, onNavigateBack: () -> Unit) {
+    TopAppBar(
+        title = {
+            Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+        },
+        navigationIcon = {
+            IconButton(onClick = onNavigateBack) {
+                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface)
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+    )
+}
 
 @Composable
 internal fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
@@ -194,52 +210,52 @@ internal fun ThemeSelectorRow(
     currentTheme: ThemeMode,
     onThemeSelected: (ThemeMode) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Rounded.DarkMode,
-                contentDescription = "Theme",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(14.dp))
-            Text(
-                text = "Theme",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+    SelectorRow(
+        icon = Icons.Rounded.DarkMode,
+        iconDescription = "Theme",
+        title = "Theme",
+        labelPrefix = "theme",
+        entries = ThemeMode.entries.map { mode ->
+            SelectorEntry(mode.displayName(), currentTheme == mode) { onThemeSelected(mode) }
         }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(cornerShape(14.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            ThemeMode.entries.forEach { mode ->
-                SelectorItem(
-                    modifier = Modifier.weight(1f),
-                    label = mode.displayName(),
-                    isSelected = currentTheme == mode,
-                    labelPrefix = "theme",
-                    onClick = { onThemeSelected(mode) }
-                )
-            }
-        }
-    }
+    )
 }
 
 @Composable
 internal fun EmailColorsRow(
     currentTheme: EmailTheme,
     onThemeSelected: (EmailTheme) -> Unit
+) {
+    SelectorRow(
+        icon = Icons.Rounded.Contrast,
+        iconDescription = "Email colors",
+        title = "Email Colors",
+        labelPrefix = "emailColor",
+        entries = EmailTheme.entries.map { mode ->
+            SelectorEntry(mode.displayName(), currentTheme == mode) { onThemeSelected(mode) }
+        },
+        description = currentTheme.description()
+    )
+}
+
+private data class SelectorEntry(
+    val label: String,
+    val isSelected: Boolean,
+    val onClick: () -> Unit,
+)
+
+/**
+ * Icon + title header above a segmented row of [SelectorItem]s, with an optional
+ * description line below. Shared by the theme and email-color pickers.
+ */
+@Composable
+private fun SelectorRow(
+    icon: ImageVector,
+    iconDescription: String,
+    title: String,
+    labelPrefix: String,
+    entries: List<SelectorEntry>,
+    description: String? = null,
 ) {
     Column(
         modifier = Modifier
@@ -248,14 +264,14 @@ internal fun EmailColorsRow(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                imageVector = Icons.Rounded.Contrast,
-                contentDescription = "Email colors",
+                imageVector = icon,
+                contentDescription = iconDescription,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(14.dp))
             Text(
-                text = "Email Colors",
+                text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
@@ -270,22 +286,24 @@ internal fun EmailColorsRow(
                 .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            EmailTheme.entries.forEach { mode ->
+            entries.forEach { entry ->
                 SelectorItem(
                     modifier = Modifier.weight(1f),
-                    label = mode.displayName(),
-                    isSelected = currentTheme == mode,
-                    labelPrefix = "emailColor",
-                    onClick = { onThemeSelected(mode) }
+                    label = entry.label,
+                    isSelected = entry.isSelected,
+                    labelPrefix = labelPrefix,
+                    onClick = entry.onClick
                 )
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = currentTheme.description(),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        if (description != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -606,78 +624,31 @@ private fun PickerBottomSheet(
     onSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    androidx.compose.ui.window.Dialog(
-        onDismissRequest = onDismiss,
-        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(onClick = onDismiss),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Surface(
-                shape = cornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 8.dp,
+    SlideSheet(onDismiss = onDismiss, title = title) {
+        options.forEachIndexed { index, option ->
+            val isSelected = option == currentValue
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
-                    .clickable(onClick = {})
+                    .clickable { onSelected(index) }
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(32.dp)
-                            .height(4.dp)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), androidx.compose.foundation.shape.CircleShape)
+                Text(
+                    text = option,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (isSelected) MaterialTheme.colorScheme.onSurface
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                if (isSelected) {
+                    Icon(
+                        imageVector = Icons.Rounded.Check,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 8.dp)
-                    )
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    options.forEachIndexed { index, option ->
-                        val isSelected = option == currentValue
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onSelected(index) }
-                                .padding(horizontal = 24.dp, vertical = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = option,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isSelected) MaterialTheme.colorScheme.onSurface
-                                else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.weight(1f)
-                            )
-                            if (isSelected) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Check,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -922,89 +893,41 @@ private fun TemplateEditorDialog(
     onSave: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+    SlideSheet(
+        onDismiss = onDismiss,
+        title = if (state.editingIndex >= 0) "Edit Template" else "New Template",
+        actions = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+            Spacer(modifier = Modifier.width(8.dp))
+            TextButton(onClick = onSave) { Text("Save") }
+        }
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(onClick = onDismiss),
-            contentAlignment = Alignment.BottomCenter
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Surface(
-                shape = cornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 8.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
-                    .clickable(onClick = {})
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(32.dp)
-                            .height(4.dp)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), CircleShape)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = if (state.editingIndex >= 0) "Edit Template" else "New Template",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Column(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = state.nameInput,
-                            onValueChange = onNameChange,
-                            label = { Text("Name") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        OutlinedTextField(
-                            value = state.subjectInput,
-                            onValueChange = onSubjectChange,
-                            label = { Text("Subject") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        OutlinedTextField(
-                            value = state.bodyInput,
-                            onValueChange = onBodyChange,
-                            label = { Text("Body") },
-                            minLines = 3,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(onClick = onDismiss) { Text("Cancel") }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        TextButton(onClick = onSave) { Text("Save") }
-                    }
-                }
-            }
+            OutlinedTextField(
+                value = state.nameInput,
+                onValueChange = onNameChange,
+                label = { Text("Name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = state.subjectInput,
+                onValueChange = onSubjectChange,
+                label = { Text("Subject") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = state.bodyInput,
+                onValueChange = onBodyChange,
+                label = { Text("Body") },
+                minLines = 3,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

@@ -2,19 +2,13 @@ package com.shrivatsav.monomail.feature.settings.pgp
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import com.shrivatsav.monomail.ui.theme.cornerShape
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,6 +22,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.shrivatsav.monomail.data.pgp.PgpKeyInfo
+import com.shrivatsav.monomail.feature.settings.SettingsDetailTopBar
+import com.shrivatsav.monomail.ui.components.SlideSheet
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -51,17 +47,7 @@ fun PgpKeyManagementScreen(
             bottom = 0.dp
         ),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text("PGP Keys", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
-            )
+            SettingsDetailTopBar(title = "PGP Keys", onNavigateBack = onNavigateBack)
         },
         floatingActionButton = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -247,82 +233,34 @@ private fun GenerateKeyDialog(
 ) {
     var userId by remember { mutableStateOf("") }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(onClick = onDismiss),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Surface(
-                shape = cornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 8.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
-                    .clickable(onClick = {})
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(32.dp)
-                            .height(4.dp)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), CircleShape)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Generate PGP Key Pair",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Column(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            "Enter your name and email (e.g., \"Alice <alice@example.com>\")",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        OutlinedTextField(
-                            value = userId,
-                            onValueChange = { userId = it },
-                            label = { Text("User ID") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(onClick = onDismiss) { Text("Cancel") }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        TextButton(onClick = { onGenerate(userId) }, enabled = userId.isNotBlank()) {
-                            Text("Generate")
-                        }
-                    }
-                }
+    SlideSheet(
+        onDismiss = onDismiss,
+        title = "Generate PGP Key Pair",
+        actions = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+            Spacer(modifier = Modifier.width(8.dp))
+            TextButton(onClick = { onGenerate(userId) }, enabled = userId.isNotBlank()) {
+                Text("Generate")
             }
+        }
+    ) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                "Enter your name and email (e.g., \"Alice <alice@example.com>\")",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            OutlinedTextField(
+                value = userId,
+                onValueChange = { userId = it },
+                label = { Text("User ID") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -334,82 +272,34 @@ private fun ImportKeyDialog(
 ) {
     var armoredKey by remember { mutableStateOf("") }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(onClick = onDismiss),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Surface(
-                shape = cornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 8.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
-                    .clickable(onClick = {})
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(32.dp)
-                            .height(4.dp)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), CircleShape)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Import PGP Key",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Column(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            "Paste the ASCII-armored PGP key below.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        OutlinedTextField(
-                            value = armoredKey,
-                            onValueChange = { armoredKey = it },
-                            label = { Text("Armored Key") },
-                            minLines = 6,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(onClick = onDismiss) { Text("Cancel") }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        TextButton(onClick = { onImport(armoredKey) }, enabled = armoredKey.isNotBlank()) {
-                            Text("Import")
-                        }
-                    }
-                }
+    SlideSheet(
+        onDismiss = onDismiss,
+        title = "Import PGP Key",
+        actions = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+            Spacer(modifier = Modifier.width(8.dp))
+            TextButton(onClick = { onImport(armoredKey) }, enabled = armoredKey.isNotBlank()) {
+                Text("Import")
             }
+        }
+    ) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                "Paste the ASCII-armored PGP key below.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            OutlinedTextField(
+                value = armoredKey,
+                onValueChange = { armoredKey = it },
+                label = { Text("Armored Key") },
+                minLines = 6,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -422,93 +312,45 @@ private fun ExportKeyDialog(
 ) {
     val context = LocalContext.current
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+    SlideSheet(
+        onDismiss = onDismiss,
+        title = "Public Key",
+        actions = {
+            TextButton(onClick = onDismiss) { Text("Close") }
+            Spacer(modifier = Modifier.width(8.dp))
+            TextButton(onClick = {
+                val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("PGP Public Key", armoredKey))
+                android.widget.Toast.makeText(context, "Copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                onCopied()
+            }) {
+                Text("Copy to Clipboard")
+            }
+        }
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(onClick = onDismiss),
-            contentAlignment = Alignment.BottomCenter
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            Text(
+                "Copy this key to share with others.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Surface(
-                shape = cornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 8.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
-                    .clickable(onClick = {})
+                shape = cornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(32.dp)
-                            .height(4.dp)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), CircleShape)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Public Key",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Column(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            "Copy this key to share with others.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Surface(
-                            shape = cornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = armoredKey,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontFamily = FontFamily.Monospace,
-                                modifier = Modifier.padding(12.dp),
-                                maxLines = 10,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(onClick = onDismiss) { Text("Close") }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        TextButton(onClick = {
-                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("PGP Public Key", armoredKey))
-                            android.widget.Toast.makeText(context, "Copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
-                            onCopied()
-                        }) {
-                            Text("Copy to Clipboard")
-                        }
-                    }
-                }
+                Text(
+                    text = armoredKey,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.padding(12.dp),
+                    maxLines = 10,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }

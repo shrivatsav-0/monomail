@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import com.shrivatsav.monomail.ui.theme.cornerShape
+import com.shrivatsav.monomail.ui.components.SlideSheet
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -136,8 +137,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.launch
@@ -161,68 +160,26 @@ private fun TemplatesModal(
     onDismiss: () -> Unit,
     onApply: (String, String) -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(onClick = onDismiss),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Surface(
-                shape = cornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 8.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
-                    .clickable(onClick = {})
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+    SlideSheet(onDismiss = onDismiss, title = "Templates") {
+        if (templates.isEmpty()) {
+            com.shrivatsav.monomail.ui.components.EmptyStateView(
+                illustration = com.shrivatsav.monomail.ui.components.IllustrationType.SEARCH_EMPTY,
+                title = "No templates yet",
+                subtitle = "Add them in Settings",
+                modifier = Modifier.height(200.dp)
+            )
+        } else {
+            templates.forEach { template ->
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .clickable { onApply(template.subject, template.body); onDismiss() }
+                        .padding(horizontal = 24.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .width(32.dp)
-                            .height(4.dp)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), CircleShape)
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        text = "Templates",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                    if (templates.isEmpty()) {
-                        com.shrivatsav.monomail.ui.components.EmptyStateView(
-                            illustration = com.shrivatsav.monomail.ui.components.IllustrationType.SEARCH_EMPTY,
-                            title = "No templates yet",
-                            subtitle = "Add them in Settings",
-                            modifier = Modifier.height(200.dp)
-                        )
-                    } else {
-                        templates.forEach { template ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth()
-                                    .clickable { onApply(template.subject, template.body); onDismiss() }
-                                    .padding(horizontal = 24.dp, vertical = 14.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = template.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
-                                    if (template.subject.isNotEmpty()) {
-                                        Text(text = template.subject, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
-                                }
-                            }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = template.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                        if (template.subject.isNotEmpty()) {
+                            Text(text = template.subject, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -1319,76 +1276,41 @@ private fun AttachmentPickerSheet(
     onSelectImages: () -> Unit,
     onSelectFiles: () -> Unit
 ) {
-    androidx.compose.ui.window.Dialog(
-        onDismissRequest = onDismiss,
-        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        androidx.compose.foundation.layout.Box(
+    SlideSheet(onDismiss = onDismiss) {
+        Spacer(modifier = androidx.compose.ui.Modifier.height(24.dp))
+
+        Row(
             modifier = androidx.compose.ui.Modifier
-                .fillMaxSize()
-                .clickable(onClick = onDismiss),
-            contentAlignment = androidx.compose.ui.Alignment.BottomCenter
+                .fillMaxWidth()
+                .clickable(onClick = onSelectImages)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
         ) {
-            androidx.compose.material3.Surface(
-                shape = cornerShape(24.dp),
-                color = androidx.compose.material3.MaterialTheme.colorScheme.surface,
-                contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 8.dp,
-                modifier = androidx.compose.ui.Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
-                    .clickable(onClick = {})
-            ) {
-                androidx.compose.foundation.layout.Column(
-                    modifier = androidx.compose.ui.Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-                ) {
-                    androidx.compose.foundation.layout.Box(
-                        modifier = androidx.compose.ui.Modifier
-                            .width(32.dp)
-                            .height(4.dp)
-                            .background(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), androidx.compose.foundation.shape.CircleShape)
-                    )
-                    Spacer(modifier = androidx.compose.ui.Modifier.height(24.dp))
-                    
-                    Row(
-                        modifier = androidx.compose.ui.Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onSelectImages)
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        androidx.compose.material3.Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Rounded.Image,
-                            contentDescription = "Gallery",
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                            modifier = androidx.compose.ui.Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = androidx.compose.ui.Modifier.width(16.dp))
-                        androidx.compose.material3.Text("Photos & Videos", style = androidx.compose.material3.MaterialTheme.typography.bodyLarge)
-                    }
-                    
-                    Row(
-                        modifier = androidx.compose.ui.Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onSelectFiles)
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        androidx.compose.material3.Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Rounded.Folder,
-                            contentDescription = "Files",
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                            modifier = androidx.compose.ui.Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = androidx.compose.ui.Modifier.width(16.dp))
-                        androidx.compose.material3.Text("Browse Files", style = androidx.compose.material3.MaterialTheme.typography.bodyLarge)
-                    }
-                }
-            }
+            androidx.compose.material3.Icon(
+                imageVector = androidx.compose.material.icons.Icons.Rounded.Image,
+                contentDescription = "Gallery",
+                tint = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                modifier = androidx.compose.ui.Modifier.size(24.dp)
+            )
+            Spacer(modifier = androidx.compose.ui.Modifier.width(16.dp))
+            androidx.compose.material3.Text("Photos & Videos", style = androidx.compose.material3.MaterialTheme.typography.bodyLarge)
+        }
+
+        Row(
+            modifier = androidx.compose.ui.Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onSelectFiles)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            androidx.compose.material3.Icon(
+                imageVector = androidx.compose.material.icons.Icons.Rounded.Folder,
+                contentDescription = "Files",
+                tint = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                modifier = androidx.compose.ui.Modifier.size(24.dp)
+            )
+            Spacer(modifier = androidx.compose.ui.Modifier.width(16.dp))
+            androidx.compose.material3.Text("Browse Files", style = androidx.compose.material3.MaterialTheme.typography.bodyLarge)
         }
     }
 }

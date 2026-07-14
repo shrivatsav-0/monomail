@@ -25,6 +25,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.ui.graphics.graphicsLayer
 import com.shrivatsav.monomail.ui.components.IllustrationType
 import com.shrivatsav.monomail.ui.components.MonoIllustration
+import com.shrivatsav.monomail.ui.components.TooltipIconButton
 import com.shrivatsav.monomail.ui.theme.MonoOpacity
 import com.shrivatsav.monomail.ui.theme.MonoSpring
 import androidx.compose.ui.Alignment
@@ -76,7 +77,7 @@ private fun SupportPage(uriHandler: androidx.compose.ui.platform.UriHandler, con
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            OnboardingSupportIconAction(
+            TooltipIconButton(
                 icon = Icons.Rounded.Share,
                 contentDescription = "Share Monomail",
                 onClick = {
@@ -87,12 +88,12 @@ private fun SupportPage(uriHandler: androidx.compose.ui.platform.UriHandler, con
                     context.startActivity(Intent.createChooser(intent, "Share Monomail"))
                 }
             )
-            OnboardingSupportIconAction(
+            TooltipIconButton(
                 icon = Icons.Rounded.BugReport,
                 contentDescription = "Report Issue",
                 onClick = { uriHandler.openUri("https://github.com/shrivatsav-0/monomail/issues") }
             )
-            OnboardingSupportIconAction(
+            TooltipIconButton(
                 icon = Icons.Rounded.AccountBalanceWallet,
                 contentDescription = "Donate Crypto (BASE)",
                 onClick = {
@@ -389,31 +390,3 @@ private fun OnboardingSupportCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun OnboardingSupportIconAction(
-    icon: ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit
-) {
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-        tooltip = { PlainTooltip { Text(contentDescription) } },
-        state = rememberTooltipState()
-    ) {
-        IconButton(
-            onClick = onClick,
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
