@@ -1,4 +1,6 @@
-package com.shrivatsav.monomail.feature.inbox
+package com.shrivatsav.monomail.feature.inbox.components
+
+import com.shrivatsav.monomail.feature.inbox.*
 
 import com.shrivatsav.monomail.model.InboxTab
 

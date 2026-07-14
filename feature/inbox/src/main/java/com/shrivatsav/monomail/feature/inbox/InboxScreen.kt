@@ -1,5 +1,7 @@
 package com.shrivatsav.monomail.feature.inbox
 
+import com.shrivatsav.monomail.feature.inbox.components.*
+
 import com.shrivatsav.monomail.ui.components.AvatarCircle
 import com.shrivatsav.monomail.model.InboxTab
 import androidx.activity.compose.BackHandler

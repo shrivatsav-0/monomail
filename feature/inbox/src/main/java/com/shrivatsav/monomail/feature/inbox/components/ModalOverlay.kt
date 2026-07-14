@@ -1,4 +1,6 @@
-package com.shrivatsav.monomail.feature.inbox
+package com.shrivatsav.monomail.feature.inbox.components
+
+import com.shrivatsav.monomail.feature.inbox.*
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
