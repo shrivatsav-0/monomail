@@ -1,4 +1,4 @@
-package com.shrivatsav.monomail.push
+package com.shrivatsav.monomail.core.data.push
 
 import com.shrivatsav.monomail.BuildConfig
 import kotlinx.coroutines.Dispatchers
